@@ -1,0 +1,132 @@
+<style>
+  /* --- СЛАЙДЕР И НАВИГАЦИЯ --- */
+  .hero-slider-section { position: relative; width: 100%; height: 70vh; overflow: hidden; background: #000; }
+
+  .slider-overlay-nav {
+    position: absolute; top: 0; left: 0; width: 100%; padding: 20px; box-sizing: border-box;
+    display: flex; justify-content: space-between; align-items: center; z-index: 100;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+  }
+
+  .nav-brand { color: white; font-size: 26px; font-weight: 900; letter-spacing: 1px; text-decoration: none; }
+  
+  .nav-actions { display: flex; gap: 10px; align-items: center; }
+
+  .btn-nav { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); transition: 0.3s; text-align: center; white-space: nowrap; font-size: 14px; }
+  .btn-nav:hover { background: rgba(255,255,255,0.3); }
+
+  /* Настройки слайдов */
+  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.5s ease-in-out; background-size: cover; background-position: center; z-index: 10; }
+  .slide.active { opacity: 1; z-index: 20; }
+
+  /* СЛАЙД 1: Диагональ */
+  .slide-1 { background: linear-gradient(to top right, #4A148C 49.8%, #000 49.8%, #000 50.2%, #8B0000 50.2%); }
+  .eva-side { position: absolute; top: 30%; left: 15%; color: #39ff14; font-size: 5vw; font-weight: 900; font-family: 'Courier New', monospace; text-shadow: 4px 4px 0px #000; transform: rotate(-5deg); }
+  .fate-side { position: absolute; bottom: 30%; right: 15%; color: #d4af37; font-size: 5vw; font-family: 'Georgia', serif; text-shadow: 4px 4px 10px #000; }
+
+  /* --- ФУТУРИСТИЧНЫЕ КАРТОЧКИ --- */
+  .cards-container { display: flex; justify-content: center; gap: 40px; padding: 60px 40px; flex-wrap: wrap; background: #0b0c10; }
+  
+  .index-card { background: #1a1a24; border-radius: 0; width: 320px; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
+  .index-card-content { padding: 30px; flex-grow: 1; text-align: center; position: relative; z-index: 2; }
+
+  /* Evangelion (Зелено-фиолетовый) */
+  .index-card.theme-nerv { border: 2px solid #4A148C; box-shadow: 0 0 20px rgba(74, 20, 140, 0.4); background: linear-gradient(180deg, rgba(74, 20, 140, 0.2) 0%, rgba(0,0,0,1) 100%); border-left: 6px solid #39ff14; }
+  .index-card.theme-nerv h2 { color: #39ff14; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 2px; }
+  .btn-index.btn-nerv { background: rgba(57, 255, 20, 0.1); border: 1px solid #39ff14; color: #39ff14; }
+  .btn-index.btn-nerv:hover { background: #39ff14; color: #000; box-shadow: 0 0 20px #39ff14; }
+
+  /* Fate (Красно-золотой) */
+  .index-card.theme-magic { border: 2px solid #8b0000; box-shadow: 0 0 20px rgba(139, 0, 0, 0.4); background: linear-gradient(180deg, rgba(139, 0, 0, 0.2) 0%, rgba(0,0,0,1) 100%); border-left: 6px solid #d4af37; border-radius: 12px; }
+  .index-card.theme-magic h2 { color: #d4af37; font-family: 'Georgia', serif; text-shadow: 0 2px 5px #000; }
+  .btn-index.btn-magic { background: rgba(139, 0, 0, 0.3); border: 1px solid #d4af37; color: #d4af37; border-radius: 8px; }
+  .btn-index.btn-magic:hover { background: #d4af37; color: #000; box-shadow: 0 0 20px rgba(212,175,55,0.6); }
+
+  .btn-index { display: block; padding: 12px; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; cursor: pointer; }
+
+  /* --- АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ --- */
+  @media (max-width: 768px) {
+    .slider-overlay-nav { padding: 15px; }
+    .nav-brand { font-size: 20px; }
+    .btn-nav { padding: 8px 10px; font-size: 13px; }
+    .eva-side { font-size: 12vw; top: 15%; left: 5%; transform: rotate(-10deg); }
+    .fate-side { font-size: 12vw; bottom: 15%; right: 5%; }
+    .cards-container { padding: 30px 15px; }
+    .index-card { width: 100%; }
+  }
+</style>
+
+<div class="hero-slider-section">
+  <div class="slider-overlay-nav">
+    <a href="/" class="nav-brand">AniGuide<span style="color:#3498db;">PRO</span></a>
+    
+    <div class="nav-actions">
+      <% if logged_in? %>
+        <a href="/profile" class="btn-nav" style="border-color: #2ecc71; color: #2ecc71;">👤 <%= current_user.username %></a>
+        <%= button_to "Выход", logout_path, method: :delete, class: "btn-nav", style: "border-color: #e74c3c; color: #e74c3c;" %>
+      <% else %>
+        <a href="/login" class="btn-nav">Войти</a>
+        <a href="/signup" class="btn-nav" style="background: rgba(52, 152, 219, 0.5); border-color: #3498db;">Регистрация</a>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="slide slide-1 active">
+    <div class="eva-side">エヴァンゲリオン</div>
+    <div class="fate-side">Fate:series</div>
+  </div>
+  
+  <div class="slide slide-2" style="background-image: url('https://w.wallhaven.cc/full/wq/wallhaven-wqery7.jpg'); background-color: #111;">
+    <div style="position:absolute; bottom:40px; left:40px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-left: 5px solid #39ff14;">
+      <div style="color:white; font-size:24px; font-weight:bold; letter-spacing: 1px;">Evangelion Unit-01</div>
+      <div style="color:#39ff14; font-family: monospace;">TEST TYPE</div>
+    </div>
+  </div>
+  
+  <div class="slide slide-3" style="background-image: url('https://w.wallhaven.cc/full/y8/wallhaven-y8l6ox.jpg'); background-color: #111;">
+    <div style="position:absolute; bottom:40px; right:40px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-right: 5px solid #d4af37; text-align: right;">
+      <div style="color:white; font-size:24px; font-weight:bold; font-family: Georgia, serif;">Saber</div>
+      <div style="color:#d4af37; font-style: italic;">Arturia Pendragon</div>
+    </div>
+  </div>
+</div>
+
+<div class="cards-container">
+  <% @franchises.each do |franchise| %>
+    <% card_class = franchise.theme == 'nerv-theme' ? 'theme-nerv' : 'theme-magic' %>
+    <% btn_class = franchise.theme == 'nerv-theme' ? 'btn-nerv' : 'btn-magic' %>
+
+    <div class="index-card <%= card_class %>">
+      <div class="index-card-content">
+        <h2><%= franchise.name %></h2>
+        <p style="font-size: 14px; color: #aaa; margin-bottom: 25px; line-height: 1.6;"><%= franchise.description %></p>
+        
+        <a href="<%= guide_path(franchise) %>" class="btn-index <%= btn_class %>" style="margin-bottom:15px;">Перейти к гайду</a>
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+          <a href="<%= franchise_characters_path(franchise) %>" class="btn-index <%= btn_class %>" style="flex: 1; font-size: 12px; padding: 10px;">Персонажи</a>
+          <a href="<%= franchise_glossary_path(franchise) %>" class="btn-index <%= btn_class %>" style="flex: 1; font-size: 12px; padding: 10px;">Глоссарий</a>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  (function() {
+    const startSlider = () => {
+      const slides = document.querySelectorAll('.slide');
+      if (slides.length === 0) return;
+      let currentSlide = 0;
+      if (window.heroSliderInterval) clearInterval(window.heroSliderInterval);
+      window.heroSliderInterval = setInterval(() => {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+      }, 7000);
+    };
+    if (document.readyState !== 'loading') startSlider();
+    else document.addEventListener('DOMContentLoaded', startSlider);
+    document.addEventListener("turbo:load", startSlider);
+  })();
+</script>

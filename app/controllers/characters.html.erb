@@ -1,0 +1,32 @@
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background-color: #1e1e2f; color: #fff; margin: 0; }
+  .container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+  .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .char-card { background: #2a2a3b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-bottom: 4px solid #3498db; margin-top: 20px; }
+  .char-info { padding: 20px; }
+  .char-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; color: #3498db; }
+  .char-role { font-size: 12px; text-transform: uppercase; color: #e67e22; margin-bottom: 10px; font-weight: bold; }
+  .char-bio { font-size: 14px; color: #bdc3c7; line-height: 1.5; }
+  .back-link { color: #aaa; text-decoration: none; margin-bottom: 20px; display: inline-block; }
+</style>
+
+<div class="container">
+  <a href="/" class="back-link">← Назад к франшизам</a>
+  <h1>Персонажи: <%= @franchise.name %></h1>
+
+  <% if @characters.any? %>
+    <div class="char-grid">
+      <% @characters.each do |char| %>
+        <div class="char-card">
+          <div class="char-info">
+            <div class="char-role"><%= char.character_role.name %></div>
+            <div class="char-name"><%= char.name %></div>
+            <p class="char-bio"><%= char.biography %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p style="color: #aaa;">В этой вселенной персонажи пока не добавлены.</p>
+  <% end %>
+</div>

@@ -1,0 +1,47 @@
+<style>
+  .form-container { max-width: 800px; margin: 40px auto; background: #2a2a3b; padding: 40px; border-radius: 15px; border-top: 5px solid #3498db; }
+  .form-group { margin-bottom: 25px; }
+  .form-group label { display: block; margin-bottom: 10px; color: #aaa; font-weight: bold; }
+  .form-group input, .form-group textarea, .form-group select { 
+    width: 100%; padding: 12px; background: #1e1e2f; color: white; border: 1px solid #444; border-radius: 8px; box-sizing: border-box; font-size: 16px;
+  }
+  .file-input { padding: 10px; background: #34495e; border: 1px dashed #3498db; }
+  .btn-save { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 18px; }
+</style>
+
+<div class="form-container">
+  <h1>Правка анкеты: <%= @character.name %></h1>
+  
+  <%= form_with model: @character, url: "/admin/characters/#{@character.id}", method: :patch, local: true do |f| %>
+    
+    <div class="form-group">
+      <%= f.label :portrait, "Обновить портрет" %>
+      <%= f.file_field :portrait, class: "file-input" %>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-group">
+        <%= f.label :name, "Имя" %>
+        <%= f.text_field :name %>
+      </div>
+      <div class="form-group">
+        <%= f.label :status, "Текущий статус" %>
+        <%= f.select :status, Character::STATUSES, include_blank: "Выберите статус..." %>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :plot_role, "Роль в сюжете" %>
+      <%= f.text_area :plot_role, style: "height: 100px;" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :backstory, "Полная история / Предыстория" %>
+      <%= f.text_area :backstory, style: "height: 250px;" %>
+    </div>
+
+    <%= f.submit "Сохранить изменения", class: "btn-save" %>
+  <% end %>
+  
+  <a href="<%= character_profile_path(@character) %>" style="display:block; text-align:center; margin-top:20px; color:#888; text-decoration:none;">← Отмена</a>
+</div>

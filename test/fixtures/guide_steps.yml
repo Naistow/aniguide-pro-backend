@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  step_number: 1
+  editor_note: MyText
+  watch_guide: one
+  work: one
+
+two:
+  step_number: 1
+  editor_note: MyText
+  watch_guide: two
+  work: two

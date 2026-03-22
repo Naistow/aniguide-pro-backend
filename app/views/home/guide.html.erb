@@ -1,0 +1,42 @@
+<div style="max-width: 900px; margin: 40px auto; padding: 20px;">
+  <a href="/" style="color: #3498db; text-decoration: none;">← Назад к франшизам</a>
+  <h1 style="margin-top: 20px; border-bottom: 2px solid #f1c40f; padding-bottom: 10px; color: white;">
+    Порядок просмотра: <%= @franchise.name %>
+  </h1>
+
+  <div style="margin-top: 30px;">
+    <% @steps.each do |step| %>
+      <div style="display: flex; gap: 20px; background: #2a2a3b; margin-bottom: 20px; padding: 25px; border-radius: 12px; border-left: 6px solid #f1c40f; align-items: center;">
+        
+        <div style="font-size: 32px; font-weight: bold; color: #f1c40f; min-width: 50px; text-align: center;">
+          <%= step.step_number %>
+        </div>
+        
+        <div style="flex-grow: 1;">
+          <a href="<%= work_profile_path(step.work) %>" style="font-size: 22px; font-weight: bold; color: white; text-decoration: none; display: inline-block; transition: color 0.2s;" onmouseover="this.style.color='#3498db'" onmouseout="this.style.color='white'">
+            <%= step.work.title %> ↗
+          </a>
+          <div style="color: #888; font-size: 14px; margin-top: 8px;">
+            <%= step.work.release_year %> | <%= step.work.media_type.name %>
+          </div>
+        </div>
+
+        <% if logged_in? %>
+          <div style="min-width: 150px;">
+            <% progress = current_user.user_progresses.find_by(work: step.work) %>
+            <form action="/update_progress" method="post">
+              <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+              <input type="hidden" name="work_id" value="<%= step.work.id %>">
+              <select name="status" onchange="this.form.submit()" style="background: #1e1e2f; color: white; border: 1px solid #444; padding: 8px; border-radius: 6px; width: 100%; cursor: pointer;">
+                <option value="" <%= 'selected' unless progress %>>— Статус —</option>
+                <option value="planned" <%= 'selected' if progress&.status == 'planned' %>>В планах</option>
+                <option value="watching" <%= 'selected' if progress&.status == 'watching' %>>Смотрю</option>
+                <option value="completed" <%= 'selected' if progress&.status == 'completed' %>>Просмотрено</option>
+              </select>
+            </form>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

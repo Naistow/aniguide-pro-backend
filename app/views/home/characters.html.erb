@@ -1,0 +1,47 @@
+<div style="max-width: 1100px; margin: 40px auto; padding: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 30px;">
+    <div>
+      <a href="/" style="text-decoration: none; font-size: 14px;">← Вернуться на главную</a>
+      <h1 class="theme-title">Архив героев: <%= @franchise.name %></h1>
+    </div>
+    
+    <% if logged_in? && current_user.admin? %>
+      <a href="/admin/characters/new?franchise_id=<%= @franchise.id %>" class="theme-btn" style="padding: 8px 15px; font-size: 13px;">+ Добавить героя</a>
+    <% end %>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
+    <% @characters.each do |char| %>
+      
+      <div class="theme-card">
+        
+        <div style="position: absolute; top: 15px; right: 15px;">
+          <% if logged_in? %>
+            <% fav = current_user.favorites.find_by(character: char) %>
+            <%= button_to (fav ? "❤️" : "🤍"), fav ? favorite_path(fav) : favorites_path(character_id: char.id), method: (fav ? :delete : :post), style: "background:none; border:none; cursor:pointer; font-size: 22px;" %>
+          <% end %>
+        </div>
+
+        <div class="theme-badge"><%= char.character_role.name %></div>
+        
+        <div style="font-size: 26px; font-weight: bold; margin-bottom: 15px; color: white;"><%= char.name %></div>
+        <p style="line-height: 1.6; font-size: 14px; min-height: 65px; opacity: 0.9;">
+          <%= truncate(char.biography, length: 130) %>
+        </p>
+
+        <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center;">
+          <a href="<%= character_profile_path(char) %>" class="theme-btn" style="width: 100%; box-sizing: border-box;">Открыть личное дело</a>
+        </div>
+
+        <% if logged_in? && current_user.admin? %>
+          <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 15px;">
+            <a href="/admin/characters/<%= char.id %>/edit" style="text-decoration: none; font-size: 16px;">📝</a>
+            <%= button_to '🗑', "/admin/characters/#{char.id}", method: :delete, data: { turbo_confirm: 'Точно удалить?' }, style: "background: none; border: none; cursor: pointer; padding: 0; font-size: 16px;" %>
+          </div>
+        <% end %>
+        
+      </div>
+
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<style>
+  .form-container { max-width: 600px; margin: 50px auto; background: #2a2a3b; padding: 40px; border-radius: 15px; border-top: 5px solid #e67e22; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .form-group { margin-bottom: 25px; }
+  .form-group label { display: block; margin-bottom: 10px; color: #bdc3c7; font-weight: bold; font-size: 14px; }
+  .form-group input, .form-group textarea, .form-group select { 
+    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1e1e2f; color: white; font-size: 16px; box-sizing: border-box;
+  }
+  .form-group textarea { height: 120px; resize: vertical; }
+  .btn-save { width: 100%; padding: 15px; background: #e67e22; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+  .btn-save:hover { background: #d35400; }
+  .back-link { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; font-size: 14px; }
+</style>
+
+<div class="form-container">
+  <h1 style="margin-top: 0; color: #e67e22;">Новый персонаж</h1>
+  <p style="color: #888; margin-bottom: 30px;">Добавление героя во вселенную: <%= @franchise&.name || "Все вселенные" %></p>
+
+  <%= form_with model: @character, url: '/admin/characters', local: true do |f| %>
+    <div class="form-group">
+      <%= f.label :name, "Имя персонажа" %>
+      <%= f.text_field :name, placeholder: "Например: Синдзи Икари", required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :franchise_id, "Вселенная (Франшиза)" %>
+      <%= f.collection_select :franchise_id, Franchise.all, :id, :name, { selected: params[:franchise_id] } %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :character_role_id, "Роль" %>
+      <%= f.collection_select :character_role_id, CharacterRole.all, :id, :name %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :biography, "Краткая биография" %>
+      <%= f.text_area :biography, placeholder: "Расскажите историю персонажа..." %>
+    </div>
+
+    <%= f.submit "Сохранить героя", class: "btn-save" %>
+  <% end %>
+
+  <a href="<%= @franchise ? franchise_characters_path(@franchise) : root_path %>" class="back-link">← Отмена</a>
+</div>

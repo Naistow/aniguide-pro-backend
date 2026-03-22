@@ -1,0 +1,2 @@
+class CharacterRole < ApplicationRecord
+end

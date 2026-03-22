@@ -1,0 +1,49 @@
+<div style="max-width: 1000px; margin: 40px auto; padding: 20px;">
+  <h1>Результаты поиска для: "<%= @query %>"</h1>
+
+  <% if @franchises.any? %>
+    <h2 style="color: #3498db; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 40px;">Франшизы</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <% @franchises.each do |f| %>
+        <a href="<%= guide_path(f) %>" style="background: #2a2a3b; padding: 15px 25px; border-radius: 10px; text-decoration: none; color: white; border: 1px solid #3498db;">
+          <%= f.name %>
+        </a>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @characters.any? %>
+    <h2 style="color: #e67e22; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 40px;">Персонажи</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+      <% @characters.each do |char| %>
+        <div style="background: #2a2a3b; padding: 20px; border-radius: 10px; border-left: 5px solid #e67e22;">
+          <div style="font-weight: bold; font-size: 18px;"><%= char.name %></div>
+          <div style="font-size: 12px; color: #888; margin-bottom: 10px;"><%= char.franchise.name %></div>
+          <p style="font-size: 14px; color: #aaa;"><%= truncate(char.biography, length: 100) %></p>
+          <a href="<%= franchise_characters_path(char.franchise) %>" style="color: #3498db; font-size: 12px; text-decoration: none;">Перейти к списку →</a>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @terms.any? %>
+    <h2 style="color: #2ecc71; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 40px;">Глоссарий</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+      <% @terms.each do |term| %>
+        <div style="background: #2a2a3b; padding: 20px; border-radius: 10px; border-left: 5px solid #2ecc71;">
+          <div style="font-weight: bold; font-size: 18px;"><%= term.term %></div>
+          <div style="font-size: 12px; color: #888; margin-bottom: 10px;"><%= term.franchise.name %></div>
+          <p style="font-size: 14px; color: #aaa;"><%= truncate(term.definition, length: 100) %></p>
+          <a href="<%= franchise_glossary_path(term.franchise) %>" style="color: #3498db; font-size: 12px; text-decoration: none;">Перейти в глоссарий →</a>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if !@franchises.any? && !@characters.any? && !@terms.any? %>
+    <div style="text-align: center; margin-top: 100px;">
+      <div style="font-size: 50px;">🔍</div>
+      <p style="color: #888;">Ничего не найдено по вашему запросу. Попробуйте изменить ключевые слова.</p>
+    </div>
+  <% end %>
+</div>

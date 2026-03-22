@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AniGuide PRO</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <style>
+      /* === БАЗОВЫЕ НАСТРОЙКИ === */
+      body { background-color: #0b0c10; color: #ffffff; font-family: 'Segoe UI', sans-serif; margin: 0; min-height: 100vh; transition: background 0.5s ease; }
+      
+      /* === УМНАЯ ШАПКА === */
+      .nav-top { background: #000; padding: 15px 40px; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid #333; }
+      
+      /* Жестко держим всё в одну строку */
+      .nav-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: nowrap; }
+      
+      .nav-brand { color: white; font-size: 24px; font-weight: 900; text-decoration: none; white-space: nowrap; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; }
+      .nav-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+      
+      .search-toggle-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 5px; transition: transform 0.2s; }
+      .search-toggle-btn:hover { transform: scale(1.1); }
+      
+      .btn-nav { background: #2a2a3b; color: white; border: 1px solid #444; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; cursor: pointer; transition: 0.3s; white-space: nowrap; font-size: 14px; }
+      
+      /* === ВЫЕЗЖАЮЩИЙ ПОИСК (Абсолютное позиционирование) === */
+      .expandable-search-wrapper { 
+        position: absolute; top: 100%; left: 0; width: 100%; 
+        background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(5px);
+        max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; 
+        border-bottom: 0px solid #333; z-index: 999;
+      }
+      .expandable-search-wrapper.active { max-height: 80px; border-bottom-width: 1px; }
+      
+      .search-form { display: flex; margin: 10px 40px; background: rgba(255,255,255,0.1); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; }
+      .search-input { flex-grow: 1; background: none; border: none; color: white; padding: 10px 15px; outline: none; font-size: 16px; width: 100%; }
+      .search-submit { background: rgba(255,255,255,0.1); border: none; border-left: 1px solid rgba(255,255,255,0.2); color: white; padding: 0 20px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+      .search-submit:hover { background: rgba(255,255,255,0.3); }
+
+      /* === ГЛОБАЛЬНЫЕ СЕМАНТИЧЕСКИЕ КЛАССЫ === */
+      .theme-title { font-size: 32px; margin: 10px 0; font-weight: bold; }
+      .theme-card { background: #1a1a24; padding: 25px; transition: transform 0.2s; position: relative; }
+      .theme-btn { display: inline-block; padding: 10px 20px; text-decoration: none; font-weight: bold; text-align: center; cursor: pointer; transition: 0.3s; }
+      .theme-badge { display: inline-block; padding: 4px 12px; font-size: 11px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; margin-bottom: 10px; }
+      
+      /* === ТЕМЫ ФРАНШИЗ === */
+      body.nerv-theme { background-color: #0d0015 !important; background-image: linear-gradient(rgba(57, 255, 20, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(57, 255, 20, 0.05) 1px, transparent 1px) !important; background-size: 50px 50px !important; font-family: 'Courier New', Courier, monospace !important; }
+      body.nerv-theme .nav-top { border-bottom: 2px solid #39ff14 !important; }
+      body.nerv-theme .theme-title { color: #39ff14 !important; text-transform: uppercase; text-shadow: 0 0 10px rgba(57,255,20,0.5); }
+      body.nerv-theme a { color: #9b59b6 !important; }
+      body.nerv-theme .theme-card { background: rgba(20, 0, 30, 0.8) !important; border: 1px solid #4A148C !important; border-left: 8px solid #39ff14 !important; border-radius: 0 !important; box-shadow: 0 0 15px rgba(74, 20, 140, 0.5) !important; color: #e0e0e0 !important; }
+      body.nerv-theme .theme-btn { background: rgba(57, 255, 20, 0.1) !important; color: #39ff14 !important; border: 1px solid #39ff14 !important; border-radius: 0 !important; }
+      body.nerv-theme .theme-btn:hover { background: #39ff14 !important; color: #000 !important; box-shadow: 0 0 15px #39ff14 !important; }
+      body.nerv-theme .theme-badge { background: #4A148C !important; color: #39ff14 !important; border: 1px solid #39ff14 !important; border-radius: 0 !important; }
+
+      body.magic-theme { background-color: #0a0505 !important; background-image: radial-gradient(circle at 50% 0%, #2c0b0e, #0a0505 70%) !important; font-family: 'Georgia', serif !important; }
+      body.magic-theme .nav-top { border-bottom: 2px solid #d4af37 !important; }
+      body.magic-theme .theme-title { color: #d4af37 !important; text-shadow: 0 2px 4px #000; }
+      body.magic-theme a { color: #e74c3c !important; }
+      body.magic-theme .theme-card { background: rgba(30, 10, 10, 0.9) !important; border: 1px solid #8b0000 !important; border-left: 6px solid #d4af37 !important; border-radius: 12px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8) !important; }
+      body.magic-theme .theme-btn { background: linear-gradient(135deg, #8b0000, #4a0000) !important; color: #d4af37 !important; border: 1px solid #d4af37 !important; border-radius: 8px !important; }
+      body.magic-theme .theme-btn:hover { background: #d4af37 !important; color: #000 !important; box-shadow: 0 0 20px rgba(212,175,55,0.6) !important; }
+      body.magic-theme .theme-badge { background: transparent !important; color: #d4af37 !important; border: 1px solid #d4af37 !important; border-radius: 20px !important; }
+
+      /* === ГЛОБАЛЬНАЯ АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ ЭКРАНОВ === */
+      @media (max-width: 768px) {
+        .nav-top { padding: 12px 15px; }
+        .nav-brand { font-size: 18px !important; }
+        .nav-actions { gap: 6px; }
+        .btn-nav { padding: 6px 10px; font-size: 12px; }
+        .search-toggle-btn { font-size: 18px; padding: 2px; }
+        
+        .search-form { margin: 10px 15px; }
+        .theme-card { padding: 15px !important; }
+        .theme-title { font-size: 24px !important; }
+        .char-list-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important; }
+      }
+
+      /* Для совсем узких экранов (чтобы гарантированно 1 строка) */
+      @media (max-width: 380px) {
+        .nav-top { padding: 10px 8px; }
+        .nav-brand { font-size: 15px !important; }
+        .btn-nav { padding: 5px 8px; font-size: 11px; }
+        .search-toggle-btn { font-size: 16px; }
+      }
+
+      /* Стили для нативного приложения */
+      body.turbo-native { padding: 0; margin: 0; }
+      body.turbo-native .theme-card { border-radius: 0 !important; box-shadow: none !important; border-right: none !important; border-left: none !important; }
+    </style>
+  </head>
+
+  <body class="<%= @franchise&.theme || 'default-theme' %> <%= 'turbo-native' if turbo_native_app? %>">
+    
+    <%# Прячем шапку ТОЛЬКО на главной и страницах авторизации %>
+    <% hide_nav = current_page?(root_path) || request.path.include?('/login') || request.path.include?('/signup') %>
+    
+    <% unless hide_nav %>
+      <div class="nav-top">
+        <div class="nav-main-row">
+          <a href="/" class="nav-brand">AniGuide<span style="<%= @franchise&.theme == 'nerv-theme' ? 'color:#39ff14;' : (@franchise&.theme == 'magic-theme' ? 'color:#d4af37;' : 'color:#3498db;') %>">PRO</span></a>
+          
+          <div class="nav-actions">
+            <button type="button" class="search-toggle-btn" id="search-toggle">🔍</button>
+            <% if logged_in? %>
+              <a href="/profile" class="btn-nav" style="border-color: #2ecc71; color: #2ecc71;">👤 <%= current_user.username %></a>
+              <%= button_to "Выход", logout_path, method: :delete, class: "btn-nav", style: "background: transparent; border: 1px solid #e74c3c; color: #e74c3c;" %>
+            <% else %>
+              <a href="/login" class="btn-nav">Войти</a>
+              <a href="/signup" class="btn-nav" style="border-color: #3498db; color: #3498db;">Рег.</a>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="expandable-search-wrapper" id="search-wrapper">
+          <form action="/search" method="get" class="search-form">
+            <input type="text" name="query" class="search-input" placeholder="Поиск героев..." value="<%= params[:query] %>">
+            <button type="submit" class="search-submit">Найти</button>
+          </form>
+        </div>
+      </div>
+    <% end %>
+
+    <main>
+      <%= yield %>
+    </main>
+    
+    <script>
+      document.addEventListener("turbo:load", function() {
+        const toggleBtn = document.getElementById("search-toggle");
+        const searchWrapper = document.getElementById("search-wrapper");
+        const searchInput = document.querySelector(".search-input");
+
+        if(toggleBtn && searchWrapper) {
+          // Защита от багов с двойным нажатием в Turbo
+          const newToggleBtn = toggleBtn.cloneNode(true);
+          toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+          
+          newToggleBtn.addEventListener("click", function() {
+            searchWrapper.classList.toggle("active");
+            if(searchWrapper.classList.contains("active")) {
+              setTimeout(() => searchInput.focus(), 300); // Фокус после того как панель выедет
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

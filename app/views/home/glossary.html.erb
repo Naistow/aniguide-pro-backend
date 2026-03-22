@@ -1,0 +1,26 @@
+<div style="max-width: 900px; margin: 40px auto; padding: 20px; color: white; font-family: 'Segoe UI', sans-serif;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #2ecc71; padding-bottom: 15px; margin-bottom: 30px;">
+    <div>
+      <a href="/" style="color: #2ecc71; text-decoration: none; font-size: 14px;">← Назад</a>
+      <h1 style="margin: 10px 0 0 0;">Глоссарий: <%= @franchise.name %></h1>
+    </div>
+
+    <% if logged_in? && current_user.admin? %>
+      <a href="/admin/glossary/new?franchise_id=<%= @franchise.id %>" 
+         style="background: #9b59b6; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px;">
+         + Добавить термин
+      </a>
+    <% end %>
+  </div>
+
+  <% if @terms.any? %>
+    <% @terms.each do |term| %>
+      <div style="background: #2a2a3b; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #2ecc71;">
+        <div style="font-size: 20px; font-weight: bold; color: #2ecc71; margin-bottom: 5px;"><%= term.term %></div>
+        <div style="color: #bdc3c7; line-height: 1.5;"><%= term.definition %></div>
+      </div>
+    <% end %>
+  <% else %>
+    <p style="color: #888; text-align: center; margin-top: 50px;">В этой вселенной термины лора пока не описаны.</p>
+  <% end %>
+</div>

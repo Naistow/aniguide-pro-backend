@@ -1,0 +1,79 @@
+<div style="max-width: 1000px; margin: 40px auto; padding: 20px; font-family: 'Segoe UI', sans-serif; color: white;">
+  
+  <div style="background: #2a2a3b; padding: 30px; border-radius: 15px; border-left: 8px solid #2ecc71; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1 style="margin: 0;">Привет, <%= current_user.username %>!</h1>
+      <p style="color: #aaa; margin: 5px 0 0 0;">Статус: <span style="color: #2ecc71; font-weight: bold;"><%= current_user.user_role.role_name %></span></p>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-size: 14px; color: #888;">Дата регистрации:</div>
+      <div style="font-weight: bold;"><%= current_user.created_at.strftime("%d.%m.%Y") %></div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+    
+    <div>
+      <h3 style="border-bottom: 2px solid #f1c40f; padding-bottom: 10px;">Статистика просмотра</h3>
+      <div style="background: #1a1a24; padding: 20px; border-radius: 12px; margin-top: 15px;">
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between;">
+          <span>✅ Просмотрено:</span>
+          <span style="color: #2ecc71; font-weight: bold;"><%= current_user.user_progresses.where(status: 'completed').count %></span>
+        </div>
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between;">
+          <span>📺 Смотрю сейчас:</span>
+          <span style="color: #3498db; font-weight: bold;"><%= current_user.user_progresses.where(status: 'watching').count %></span>
+        </div>
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between;">
+          <span>⏳ В планах:</span>
+          <span style="color: #f1c40f; font-weight: bold;"><%= current_user.user_progresses.where(status: 'planned').count %></span>
+        </div>
+        <div style="border-top: 1px solid #333; padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between;">
+          <span style="color: #888;">Всего отметок:</span>
+          <strong><%= current_user.user_progresses.count %></strong>
+        </div>
+      </div>
+
+      <h3 style="border-bottom: 2px solid #e67e22; padding-bottom: 10px; margin-top: 40px;">Любимые персонажи</h3>
+      <div style="background: #1a1a24; padding: 20px; border-radius: 12px; margin-top: 15px;">
+        <% if current_user.favorite_characters.any? %>
+          <% current_user.favorite_characters.each do |char| %>
+            <div style="margin-bottom: 10px; font-size: 14px;">
+              ❤️ <strong><%= char.name %></strong> <small style="color: #666;">(<%= char.franchise.name %>)</small>
+            </div>
+          <% end %>
+        <% else %>
+          <p style="color: #555; font-size: 13px;">Список пуст.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="border-bottom: 2px solid #3498db; padding-bottom: 10px;">Недавние отметки</h3>
+      <% if current_user.user_progresses.any? %>
+        <% current_user.user_progresses.order(updated_at: :desc).limit(5).each do |p| %>
+          <div style="background: #2a2a3b; padding: 15px; border-radius: 10px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: bold;"><%= p.work.title %></div>
+              <div style="font-size: 12px; color: #888;"><%= p.work.franchise.name %></div>
+            </div>
+            <div style="font-size: 12px; background: #1e1e2f; padding: 5px 10px; border-radius: 4px; color: #aaa;">
+              <%= case p.status
+                  when 'completed' then 'Просмотрено'
+                  when 'watching' then 'В процессе'
+                  when 'planned' then 'В планах'
+                  end %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <p style="color: #888; margin-top: 20px; text-align: center;">Здесь будет отображаться ваш прогресс по сериям и фильмам.</p>
+      <% end %>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 60px; text-align: center;">
+    <a href="/" style="color: #555; text-decoration: none; font-size: 14px;">← Вернуться на главную</a>
+  </div>
+</div>

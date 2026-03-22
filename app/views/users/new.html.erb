@@ -1,0 +1,53 @@
+<style>
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #1e1e2f; color: #fff; margin: 0; }
+  .auth-container { max-width: 400px; margin: 80px auto; background: #2a2a3b; padding: 30px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); border-top: 5px solid #3498db; }
+  .auth-container h2 { text-align: center; margin-top: 0; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; margin-bottom: 8px; color: #bdc3c7; font-size: 14px; }
+  .form-group input { width: 100%; padding: 10px; box-sizing: border-box; border-radius: 6px; border: 1px solid #444; background: #1e1e2f; color: white; }
+  .btn-submit { width: 100%; padding: 12px; background: #3498db; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background 0.2s; }
+  .btn-submit:hover { background: #2980b9; }
+  .error-messages { color: #e74c3c; font-size: 14px; margin-bottom: 15px; }
+  .back-link { display: block; text-align: center; margin-top: 15px; color: #aaa; text-decoration: none; font-size: 14px; }
+  .back-link:hover { color: #fff; }
+</style>
+
+<div class="auth-container">
+  <h2>Регистрация</h2>
+
+  <% if @user.errors.any? %>
+    <div class="error-messages">
+      <ul>
+        <% @user.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: @user, url: '/users', local: true do |f| %>
+    <div class="form-group">
+      <%= f.label :username, "Имя пользователя" %>
+      <%= f.text_field :username, required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :email, "Email" %>
+      <%= f.email_field :email, required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :password, "Пароль" %>
+      <%= f.password_field :password, required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :password_confirmation, "Подтверждение пароля" %>
+      <%= f.password_field :password_confirmation, required: true %>
+    </div>
+
+    <%= f.submit "Создать аккаунт", class: "btn-submit" %>
+  <% end %>
+  
+  <a href="/" class="back-link">На главную</a>
+</div>

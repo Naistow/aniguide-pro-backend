@@ -1,0 +1,32 @@
+<style>
+  .form-container { max-width: 500px; margin: 50px auto; background: #2a2a3b; padding: 40px; border-radius: 15px; border-top: 5px solid #3498db; }
+  .form-group { margin-bottom: 25px; }
+  .form-group label { display: block; margin-bottom: 10px; color: #aaa; font-weight: bold; }
+  .form-group select, .form-group input { 
+    width: 100%; padding: 12px; background: #1e1e2f; color: white; border: 1px solid #444; border-radius: 8px; font-size: 16px;
+  }
+  .btn-save { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+</style>
+
+<div class="form-container">
+  <h1 style="margin-top: 0; font-size: 24px;">Связать с тайтлом</h1>
+  <p style="color: #888; margin-bottom: 30px;">Добавление участия для: <strong><%= @character&.name %></strong></p>
+
+  <%= form_with model: @appearance, url: '/admin/appearances', local: true do |f| %>
+    <%= f.hidden_field :character_id, value: params[:character_id] %>
+
+    <div class="form-group">
+      <%= f.label :work_id, "Выберите аниме/фильм" %>
+      <%= f.collection_select :work_id, @works, :id, :title, { prompt: "Выберите из списка..." } %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :episodes, "Серии участия" %>
+      <%= f.text_field :episodes, placeholder: "Напр: 1-12, 24-26 или 'Весь фильм'" %>
+    </div>
+
+    <%= f.submit "Подтвердить участие", class: "btn-save" %>
+  <% end %>
+
+  <a href="<%= character_profile_path(@character) %>" style="display:block; text-align:center; margin-top:20px; color:#555; text-decoration:none;">← Отмена</a>
+</div>

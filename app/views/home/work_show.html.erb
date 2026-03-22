@@ -1,0 +1,122 @@
+<style>
+  .work-header { padding: 40px; margin-bottom: 40px; }
+  
+  /* Стили для сворачивающихся вкладок (Аккордеон) */
+  details.episode-tab { 
+    background: rgba(0,0,0,0.5); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    margin-bottom: 15px; 
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  details.episode-tab summary { 
+    padding: 20px; 
+    font-size: 18px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    outline: none;
+    list-style: none; /* Убирает стандартный треугольник в некоторых браузерах */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  details.episode-tab summary::-webkit-details-marker { display: none; }
+  
+  details.episode-tab summary::after {
+    content: '▼';
+    font-size: 14px;
+    color: inherit;
+    transition: transform 0.3s ease;
+  }
+  
+  details.episode-tab[open] summary::after { transform: rotate(180deg); }
+  details.episode-tab[open] summary { border-bottom: 1px solid rgba(255,255,255,0.1); }
+  
+  .episode-content { padding: 25px; background: rgba(0,0,0,0.2); }
+  .char-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+  .char-mini-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; border-left: 3px solid; display: flex; align-items: center; gap: 10px; }
+</style>
+
+<div style="max-width: 1000px; margin: 40px auto; padding: 20px;">
+  <a href="<%= guide_path(@franchise) %>" style="color: #888; text-decoration: none;">← Вернуться к гайду</a>
+
+  <div class="theme-card work-header" style="margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="color: #888; margin-bottom: 10px; text-transform: uppercase; font-size: 12px; font-weight: bold;">
+          <%= @franchise.name %> • <%= @work.media_type.name %> • <%= @work.release_year %>
+        </div>
+        <h1 class="theme-title" style="margin: 0 0 15px 0;"><%= @work.title %></h1>
+        
+        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+          <h3 style="margin: 0 0 10px 0; font-size: 16px; opacity: 0.7;">Синопсис:</h3>
+          <p style="line-height: 1.6; opacity: 0.9; font-size: 15px; white-space: pre-wrap;"><%= @work.synopsis.presence || "Общее описание сюжета пока отсутствует." %></p>
+        </div>
+      </div>
+
+      <% if logged_in? && current_user.admin? %>
+        <a href="/admin/episodes/new?work_id=<%= @work.id %>" class="theme-btn">+ Добавить серию</a>
+      <% end %>
+    </div>
+  </div>
+
+  <h2 class="theme-title" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 30px;">Эпизоды и Сюжет</h2>
+
+  <div class="episodes-list">
+    <% if @episodes.any? %>
+      <% @episodes.each do |ep| %>
+        <details class="episode-tab" id="episode-<%= ep.id %>">
+          <summary>
+            <span style="color: inherit;">
+              <span style="opacity: 0.7; margin-right: 10px;">ЭП. <%= ep.episode_number %></span> 
+              <%= ep.title %>
+            </span>
+          </summary>
+          
+          <div class="episode-content">
+            <% if logged_in? && current_user.admin? %>
+              <div style="text-align: right; margin-bottom: 10px;">
+                <%= link_to '🗑 Удалить серию', "/admin/episodes/#{ep.id}", data: { turbo_method: :delete, turbo_confirm: 'Удалить серию?' }, style: "color: #e74c3c; font-size: 12px; text-decoration: none;" %>
+              </div>
+            <% end %>
+
+            <h4 style="margin: 0 0 10px 0; color: inherit; opacity: 0.8;">Сюжет серии:</h4>
+            <div style="line-height: 1.6; opacity: 0.9; white-space: pre-wrap; margin-bottom: 25px;"><%= ep.description.presence || "Описание скрыто." %></div>
+
+            <h4 style="margin: 0 0 10px 0; color: inherit; opacity: 0.8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">Зафиксированные участники:</h4>
+            
+            <% if ep.characters.any? %>
+              <% grouped_chars = ep.characters.group_by(&:character_role) %>
+              
+              <% grouped_chars.each do |role, characters| %>
+                <div style="margin-top: 15px;">
+                  <div style="font-size: 11px; text-transform: uppercase; color: #888; font-weight: bold; margin-bottom: 5px;"><%= role.name %></div>
+                  <div class="char-list-grid">
+                    <% characters.each do |char| %>
+                      <a href="<%= character_profile_path(char) %>" style="text-decoration: none; color: white;">
+                        <div class="char-mini-card" style="border-color: <%= @franchise.theme == 'nerv-theme' ? '#39ff14' : '#d4af37' %>;">
+                          <% if char.portrait.attached? %>
+                            <%= image_tag char.portrait, style: "width: 30px; height: 30px; border-radius: 50%; object-fit: cover;" %>
+                          <% else %>
+                            <div style="width: 30px; height: 30px; border-radius: 50%; background: #444; display: flex; justify-content: center; align-items: center; font-size: 14px;">👤</div>
+                          <% end %>
+                          <span style="font-size: 14px; font-weight: bold;"><%= char.name %></span>
+                        </div>
+                      </a>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <p style="opacity: 0.5; font-size: 13px;">Данные о персонажах в этой серии отсутствуют.</p>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    <% else %>
+      <div class="theme-card" style="text-align: center; padding: 40px; color: #888;">Сюжет этого тайтла еще не расписан.</div>
+    <% end %>
+  </div>
+</div>
