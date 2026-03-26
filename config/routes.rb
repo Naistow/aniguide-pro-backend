@@ -10,6 +10,9 @@ Rails.application.routes.draw do
   get '/franchise/:id/glossary', to: 'home#glossary', as: 'franchise_glossary'
   get '/character/:id', to: 'home#character_show', as: 'character_profile'
   
+  # Маршрут для сохранения загруженного фото (портрета) персонажа
+  patch '/characters/:id', to: 'home#update_character', as: 'character'
+  
   # Просмотр тайтла и серий
   get '/work/:id', to: 'home#work_show', as: 'work_profile'
   

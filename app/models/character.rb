@@ -5,6 +5,7 @@ class Character < ApplicationRecord
   has_many :favorites, dependent: :destroy
   has_many :appearances, dependent: :destroy
   has_many :works, through: :appearances
+  has_one_attached :portrait
   
   # НОВЫЕ СВЯЗИ ДЛЯ СЕРИЙ
   has_many :episode_appearances, dependent: :destroy

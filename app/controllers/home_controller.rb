@@ -28,6 +28,17 @@ class HomeController < ApplicationController
     @episodes = @character.episodes.includes(:work).order('works.release_year ASC, episodes.episode_number ASC')
   end
 
+  # --- НОВЫЙ МЕТОД ДЛЯ СОХРАНЕНИЯ КАРТИНКИ ---
+  def update_character
+    @character = Character.find(params[:id])
+    
+    if @character.update(character_params)
+      redirect_back fallback_location: root_path, notice: "Фото успешно загружено!"
+    else
+      redirect_back fallback_location: root_path, alert: "Ошибка при загрузке фото."
+    end
+  end
+
   def work_show
     @work = Work.find(params[:id])
     @franchise = @work.franchise
@@ -44,5 +55,12 @@ class HomeController < ApplicationController
     else
       @franchises = @characters = @terms = []
     end
+  end
+
+  private
+
+  # --- НОВЫЙ ПРИВАТНЫЙ ФИЛЬТР ДЛЯ ПРОПУСКА КАРТИНКИ ---
+  def character_params
+    params.require(:character).permit(:portrait)
   end
 end

@@ -26,6 +26,15 @@
               STATUS: <%= @character.status %>
             </div>
           <% end %>
+
+          <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.2);">
+            <p style="font-size: 12px; color: #888; margin-bottom: 5px;">Загрузить портрет (Cloudinary):</p>
+            <%= form_with(model: @character, local: true, html: { multipart: true }) do |form| %>
+              <%= form.file_field :portrait, style: "width: 100%; font-size: 12px; margin-bottom: 10px; color: white;" %>
+              <%= form.submit "Сохранить фото", class: "theme-btn", style: "width: 100%; padding: 5px; cursor: pointer;" %>
+            <% end %>
+          </div>
+
         </div>
       </div>
     </div>
@@ -45,7 +54,6 @@
         <div class="section-header" style="color: inherit;">Зафиксированные участия (Эпизоды)</div>
         
         <% if @episodes.any? %>
-          <% # Группируем эпизоды по тайтлам (Works) %>
           <% @episodes.group_by(&:work).each do |work, episodes| %>
             <div style="margin-bottom: 25px;">
               <h3 style="margin: 0 0 10px 0; font-size: 16px; opacity: 0.9;"><%= work.title %></h3>

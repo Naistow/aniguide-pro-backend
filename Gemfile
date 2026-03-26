@@ -8,14 +8,11 @@ gem "stimulus-rails"
 gem "jbuilder"
 gem "bcrypt", "~> 3.1.7"
 gem "fiddle"
+gem 'pg'
+gem 'cloudinary'
 
-group :development, :test do
-  gem "sqlite3"
-end
+gem 'dotenv-rails', groups: [:development, :test]
 
-group :production do
-  gem "pg"
-end
 
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
