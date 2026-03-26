@@ -54,4 +54,6 @@ Rails.application.routes.draw do
   get '/admin/appearances/new', to: 'admin#new_appearance'
   post '/admin/appearances', to: 'admin#create_appearance'
   delete '/admin/appearances/:id', to: 'admin#destroy_appearance'
+
+  get '/api/franchises', to: 'api#franchises'
 end
