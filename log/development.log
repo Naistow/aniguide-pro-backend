@@ -40759,3 +40759,175 @@ Processing by HomeController#glossary as HTML
 Completed 200 OK in 382ms (Views: 190.3ms | ActiveRecord: 27.5ms (8 queries, 0 cached) | GC: 31.3ms)
 
 
+[dotenv] Set [36mCLOUDINARY_URL[0m
+[dotenv] Loaded [33m.env[0m
+  [1m[35m (0.6ms)[0m  [1m[34mSELECT pg_try_advisory_lock(2609004286695159885) /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (3.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (2.8ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='AniguidePro'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_advisory_unlock(2609004286695159885) /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO "$user", public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.3ms)[0m  [1m[35mSET search_path TO "$user", public /*application='AniguidePro'*/[0m
+[dotenv] Set [36mCLOUDINARY_URL[0m
+[dotenv] Loaded [33m.env[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_try_advisory_lock(2609004286695159885) /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+Reverting CreateGlossaries (20260410110856)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='AniguidePro'*/[0m
+  [1m[35m (27.1ms)[0m  [1m[35mDROP TABLE "glossaries" /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Destroy (4.3ms)[0m  [1m[31mDELETE FROM "schema_migrations" WHERE "schema_migrations"."version" = '20260410110856' /*application='AniguidePro'*/[0m
+  [1m[36mTRANSACTION (6.1ms)[0m  [1m[35mCOMMIT /*application='AniguidePro'*/[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_advisory_unlock(2609004286695159885) /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.4ms)[0m  [1m[35mSET search_path TO "$user", public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO "$user", public /*application='AniguidePro'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[34mSELECT pg_try_advisory_lock(2609004286695159885) /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (1.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='AniguidePro'*/[0m
+Migrating to CreateGlossaries (20260410110856)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN /*application='AniguidePro'*/[0m
+  [1m[35m (74.9ms)[0m  [1m[35mCREATE TABLE "glossaries" ("id" bigserial primary key, "title" character varying, "description" text, "image_url" character varying, "franchise_id" bigint NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_76576fc6b3"
+FOREIGN KEY ("franchise_id")
+  REFERENCES "franchises" ("id")
+) /*application='AniguidePro'*/[0m
+  [1m[35m (2.1ms)[0m  [1m[35mCREATE INDEX "index_glossaries_on_franchise_id" ON "glossaries" ("franchise_id") /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.7ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260410110856') RETURNING "version" /*application='AniguidePro'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mCOMMIT /*application='AniguidePro'*/[0m
+  [1m[35m (0.6ms)[0m  [1m[34mSELECT pg_advisory_unlock(2609004286695159885) /*application='AniguidePro'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO "$user", public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.1ms)[0m  [1m[35mSET search_path TO public /*application='AniguidePro'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO "$user", public /*application='AniguidePro'*/[0m
+[dotenv] Set [36mCLOUDINARY_URL[0m
+[dotenv] Loaded [33m.env[0m
+Started GET "/profile" for ::1 at 2026-04-22 00:11:31 +0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='AniguidePro'*/[0m
+Processing by UsersController#show as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering users/show.html.erb within layouts/application
+  [1m[36mUser Load (3.1ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 2 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/controllers/application_controller.rb:11:in 'ApplicationController#current_user'
+  [1m[36mUserRole Load (1.9ms)[0m  [1m[34mSELECT "user_roles".* FROM "user_roles" WHERE "user_roles"."id" = 3 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/models/user.rb:10:in 'User#admin?'
+  [1m[36mWork Exists? (5.5ms)[0m  [1m[34mSELECT 1 AS one FROM "works" INNER JOIN "favorites" ON "works"."id" = "favorites"."work_id" WHERE "favorites"."user_id" = 2 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:52
+  [1m[36mCharacter Exists? (4.7ms)[0m  [1m[34mSELECT 1 AS one FROM "characters" INNER JOIN "favorites" ON "characters"."id" = "favorites"."character_id" WHERE "favorites"."user_id" = 2 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:67
+  [1m[36mCharacter Load (0.5ms)[0m  [1m[34mSELECT "characters".* FROM "characters" INNER JOIN "favorites" ON "characters"."id" = "favorites"."character_id" WHERE "favorites"."user_id" = 2 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:68
+  [1m[36mActiveStorage::Attachment Load (4.1ms)[0m  [1m[34mSELECT "active_storage_attachments".* FROM "active_storage_attachments" WHERE "active_storage_attachments"."record_id" = 5 AND "active_storage_attachments"."record_type" = 'Character' AND "active_storage_attachments"."name" = 'portrait' LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  [1m[36mActiveStorage::Blob Load (3.9ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 7 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  [1m[36mActiveStorage::Attachment Load (0.4ms)[0m  [1m[34mSELECT "active_storage_attachments".* FROM "active_storage_attachments" WHERE "active_storage_attachments"."record_id" = 4 AND "active_storage_attachments"."record_type" = 'Character' AND "active_storage_attachments"."name" = 'portrait' LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  [1m[36mActiveStorage::Blob Load (0.3ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 8 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  Rendered users/show.html.erb within layouts/application (Duration: 1005.2ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1348.9ms | GC: 0.0ms)
+Completed 200 OK in 1491ms (Views: 1377.0ms | ActiveRecord: 58.9ms (9 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NywicHVyIjoiYmxvYl9pZCJ9fQ==--ceb53bf153d4c0214c51a23d7451df976a362a79/2bcf1049ae4efe647a9e23ca50efad43.jpg" for ::1 at 2026-04-22 00:11:34 +0300
+Started GET "/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6OCwicHVyIjoiYmxvYl9pZCJ9fQ==--6611baba606209bfb1152e51c1c788b54e4915ef/hD0Tnmb5Ctf6ErDksfnn9RaD9QoqNmoAoGrhX5RRR38FOg2HaKwRC0kkCQ3j-clF276MsKWcdB8An2IKfwVbteCx6oYCTbtrSooBYB1ZQ0G6hskKLnM3JPxvKbQ.webp" for ::1 at 2026-04-22 00:11:34 +0300
+Started GET "/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MTEsInB1ciI6ImJsb2JfaWQifX0=--fdb5cc3a4fcd9fe2d6d7d8702d8f7ba78a1f14a3/959669e0e7e631c005db10ebe84547ad.jpg" for ::1 at 2026-04-22 00:11:34 +0300
+Processing by ActiveStorage::Blobs::RedirectController#show as JPEG
+  Parameters: {"signed_id" => "eyJfcmFpbHMiOnsiZGF0YSI6NywicHVyIjoiYmxvYl9pZCJ9fQ==--ceb53bf153d4c0214c51a23d7451df976a362a79", "filename" => "2bcf1049ae4efe647a9e23ca50efad43"}
+Processing by ActiveStorage::Blobs::RedirectController#show as WEBP
+  Parameters: {"signed_id" => "eyJfcmFpbHMiOnsiZGF0YSI6OCwicHVyIjoiYmxvYl9pZCJ9fQ==--6611baba606209bfb1152e51c1c788b54e4915ef", "filename" => "hD0Tnmb5Ctf6ErDksfnn9RaD9QoqNmoAoGrhX5RRR38FOg2HaKwRC0kkCQ3j-clF276MsKWcdB8An2IKfwVbteCx6oYCTbtrSooBYB1ZQ0G6hskKLnM3JPxvKbQ"}
+Processing by ActiveStorage::Blobs::RedirectController#show as JPEG
+  Parameters: {"signed_id" => "eyJfcmFpbHMiOnsiZGF0YSI6MTEsInB1ciI6ImJsb2JfaWQifX0=--fdb5cc3a4fcd9fe2d6d7d8702d8f7ba78a1f14a3", "filename" => "959669e0e7e631c005db10ebe84547ad"}
+  [1m[36mActiveStorage::Blob Load (3.6ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 7 LIMIT 1 /*action='show',application='AniguidePro',controller='redirect'*/[0m
+  [1m[36mActiveStorage::Blob Load (27.4ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 11 LIMIT 1 /*action='show',application='AniguidePro',controller='redirect'*/[0m
+  [1m[36mActiveStorage::Blob Load (127.4ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 8 LIMIT 1 /*action='show',application='AniguidePro',controller='redirect'*/[0m
+[36m  Cloudinary Storage (372.1ms) [0m[34mGenerated URL for file at key: 8e1thu2uva1lzhzqitx0qkqx5o79 (https://res.cloudinary.com/dbzifpjno/image/upload/v1/aniguide_pro/8e1thu2uva1lzhzqitx0qkqx5o79.jpg?_a=BACJ3SAE)[0m
+Redirected to https://res.cloudinary.com/dbzifpjno/image/upload/v1/aniguide_pro/8e1thu2uva1lzhzqitx0qkqx5o79.jpg?_a=BACJ3SAE
+Completed 302 Found in 426ms (ActiveRecord: 3.6ms (1 query, 0 cached) | GC: 15.6ms)
+
+
+[36m  Cloudinary Storage (322.4ms) [0m[34mGenerated URL for file at key: 8l9bq84q8le89vw9bdn8ot2zda0j (https://res.cloudinary.com/dbzifpjno/image/upload/v1/aniguide_pro/8l9bq84q8le89vw9bdn8ot2zda0j.jpg?_a=BACJ3SAE)[0m
+Redirected to https://res.cloudinary.com/dbzifpjno/image/upload/v1/aniguide_pro/8l9bq84q8le89vw9bdn8ot2zda0j.jpg?_a=BACJ3SAE
+Completed 302 Found in 414ms (ActiveRecord: 27.4ms (1 query, 0 cached) | GC: 15.6ms)
+
+
+[36m  Cloudinary Storage (249.9ms) [0m[34mGenerated URL for file at key: guptf9yvc43g4m66ll1dulpiofg8 (https://res.cloudinary.com/dbzifpjno/image/upload/v1/aniguide_pro/guptf9yvc43g4m66ll1dulpiofg8.webp?_a=BACJ3SAE)[0m
+Redirected to https://res.cloudinary.com/dbzifpjno/image/upload/v1/aniguide_pro/guptf9yvc43g4m66ll1dulpiofg8.webp?_a=BACJ3SAE
+Completed 302 Found in 446ms (ActiveRecord: 137.9ms (1 query, 0 cached) | GC: 15.6ms)
+
+
+Started GET "/favicon.ico" for ::1 at 2026-04-22 00:11:34 +0300
+  
+ActionController::RoutingError (No route matches [GET] "/favicon.ico"):
+  
+Started GET "/character/4" for ::1 at 2026-04-22 00:11:42 +0300
+Processing by CharactersController#show as HTML
+  Parameters: {"id" => "4"}
+  [1m[36mCharacter Load (2.2ms)[0m  [1m[34mSELECT "characters".* FROM "characters" WHERE "characters"."id" = 4 LIMIT 1 /*action='show',application='AniguidePro',controller='characters'*/[0m
+  ↳ app/controllers/characters_controller.rb:3:in 'CharactersController#show'
+  [1m[36mEpisode Load (7.5ms)[0m  [1m[34mSELECT "episodes".* FROM "episodes" INNER JOIN "characters_episodes" ON "episodes"."id" = "characters_episodes"."episode_id" WHERE "characters_episodes"."character_id" = 4 /*action='show',application='AniguidePro',controller='characters'*/[0m
+  ↳ app/controllers/characters_controller.rb:7:in 'Enumerable#map'
+  Rendering layout layouts/application.html.erb
+  Rendering characters/show.html.erb within layouts/application
+  [1m[36mUser Load (1.9ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 2 LIMIT 1 /*action='show',application='AniguidePro',controller='characters'*/[0m
+  ↳ app/controllers/application_controller.rb:11:in 'ApplicationController#current_user'
+  [1m[36mUserRole Load (2.0ms)[0m  [1m[34mSELECT "user_roles".* FROM "user_roles" WHERE "user_roles"."id" = 3 LIMIT 1 /*action='show',application='AniguidePro',controller='characters'*/[0m
+  ↳ app/models/user.rb:10:in 'User#admin?'
+  [1m[36mActiveStorage::Attachment Load (2.4ms)[0m  [1m[34mSELECT "active_storage_attachments".* FROM "active_storage_attachments" WHERE "active_storage_attachments"."record_id" = 4 AND "active_storage_attachments"."record_type" = 'Character' AND "active_storage_attachments"."name" = 'portrait' LIMIT 1 /*action='show',application='AniguidePro',controller='characters'*/[0m
+  ↳ app/views/characters/show.html.erb:3
+  [1m[36mActiveStorage::Blob Load (0.3ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 8 LIMIT 1 /*action='show',application='AniguidePro',controller='characters'*/[0m
+  ↳ app/views/characters/show.html.erb:3
+  [1m[36mFavorite Load (2.1ms)[0m  [1m[34mSELECT "favorites".* FROM "favorites" WHERE "favorites"."user_id" = 2 AND "favorites"."character_id" = 4 LIMIT 1 /*action='show',application='AniguidePro',controller='characters'*/[0m
+  ↳ app/views/characters/show.html.erb:60
+  Rendered characters/show.html.erb within layouts/application (Duration: 29.1ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 30.5ms | GC: 0.0ms)
+Completed 200 OK in 149ms (Views: 24.7ms | ActiveRecord: 29.0ms (7 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/" for ::1 at 2026-04-22 00:11:44 +0300
+Processing by HomeController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering home/index.html.erb within layouts/application
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 2 LIMIT 1 /*action='index',application='AniguidePro',controller='home'*/[0m
+  ↳ app/controllers/application_controller.rb:11:in 'ApplicationController#current_user'
+  [1m[36mFranchise Load (3.4ms)[0m  [1m[34mSELECT "franchises".* FROM "franchises" /*action='index',application='AniguidePro',controller='home'*/[0m
+  ↳ app/views/home/index.html.erb:96
+  Rendered home/index.html.erb within layouts/application (Duration: 16.4ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 18.0ms | GC: 0.0ms)
+Completed 200 OK in 69ms (Views: 15.8ms | ActiveRecord: 5.1ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/profile" for ::1 at 2026-04-22 00:11:45 +0300
+Processing by UsersController#show as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering users/show.html.erb within layouts/application
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 2 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/controllers/application_controller.rb:11:in 'ApplicationController#current_user'
+  [1m[36mUserRole Load (0.3ms)[0m  [1m[34mSELECT "user_roles".* FROM "user_roles" WHERE "user_roles"."id" = 3 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/models/user.rb:10:in 'User#admin?'
+  [1m[36mWork Exists? (2.2ms)[0m  [1m[34mSELECT 1 AS one FROM "works" INNER JOIN "favorites" ON "works"."id" = "favorites"."work_id" WHERE "favorites"."user_id" = 2 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:52
+  [1m[36mCharacter Exists? (0.5ms)[0m  [1m[34mSELECT 1 AS one FROM "characters" INNER JOIN "favorites" ON "characters"."id" = "favorites"."character_id" WHERE "favorites"."user_id" = 2 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:67
+  [1m[36mCharacter Load (0.3ms)[0m  [1m[34mSELECT "characters".* FROM "characters" INNER JOIN "favorites" ON "characters"."id" = "favorites"."character_id" WHERE "favorites"."user_id" = 2 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:68
+  [1m[36mActiveStorage::Attachment Load (0.4ms)[0m  [1m[34mSELECT "active_storage_attachments".* FROM "active_storage_attachments" WHERE "active_storage_attachments"."record_id" = 5 AND "active_storage_attachments"."record_type" = 'Character' AND "active_storage_attachments"."name" = 'portrait' LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  [1m[36mActiveStorage::Blob Load (0.4ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 7 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  [1m[36mActiveStorage::Attachment Load (0.3ms)[0m  [1m[34mSELECT "active_storage_attachments".* FROM "active_storage_attachments" WHERE "active_storage_attachments"."record_id" = 4 AND "active_storage_attachments"."record_type" = 'Character' AND "active_storage_attachments"."name" = 'portrait' LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  [1m[36mActiveStorage::Blob Load (0.5ms)[0m  [1m[34mSELECT "active_storage_blobs".* FROM "active_storage_blobs" WHERE "active_storage_blobs"."id" = 8 LIMIT 1 /*action='show',application='AniguidePro',controller='users'*/[0m
+  ↳ app/views/users/show.html.erb:69
+  Rendered users/show.html.erb within layouts/application (Duration: 25.4ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 26.6ms | GC: 0.0ms)
+Completed 200 OK in 31ms (Views: 22.1ms | ActiveRecord: 5.3ms (9 queries, 0 cached) | GC: 0.0ms)
+
+
