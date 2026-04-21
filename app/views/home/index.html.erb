@@ -101,7 +101,7 @@
         <h2><%= franchise.name %></h2>
         <p style="font-size: 14px; color: #aaa; margin-bottom: 25px; line-height: 1.6;"><%= franchise.description %></p>
         
-        <a href="<%= guide_path(franchise) %>" class="btn-index <%= btn_class %>" style="margin-bottom:15px;">Перейти к гайду</a>
+        <a href="<%= franchise_map_path(franchise) %>" class="btn-index <%= btn_class %>" style="margin-bottom:15px;">Интерактивная карта</a>
         
         <div style="display: flex; gap: 10px; margin-top: 15px;">
           <a href="<%= franchise_characters_path(franchise) %>" class="btn-index <%= btn_class %>" style="flex: 1; font-size: 12px; padding: 10px;">Персонажи</a>

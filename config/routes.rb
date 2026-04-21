@@ -4,17 +4,37 @@ Rails.application.routes.draw do
   # Поиск
   get '/search', to: 'home#search', as: 'search'
   
-  # Основной контент
-  get '/guide/:id', to: 'home#guide', as: 'guide'
+  # Основной контент франшизы
   get '/franchise/:id/characters', to: 'home#characters', as: 'franchise_characters'
+  post '/franchise/:id/characters', to: 'characters#create'
   get '/franchise/:id/glossary', to: 'home#glossary', as: 'franchise_glossary'
-  get '/character/:id', to: 'home#character_show', as: 'character_profile'
+
+  post '/franchise/:id/glossary', to: 'glossaries#create'
+  patch '/glossary/:id', to: 'glossaries#update'
+  delete '/glossary/:id', to: 'glossaries#destroy'
   
-  # Маршрут для сохранения загруженного фото (портрета) персонажа
-  patch '/characters/:id', to: 'home#update_character', as: 'character'
+  # Просмотр и редактирование страницы персонажа
+  get '/character/:id', to: 'characters#show', as: 'character_profile'
+  patch '/character/:id', to: 'characters#update'
   
-  # Просмотр тайтла и серий
-  get '/work/:id', to: 'home#work_show', as: 'work_profile'
+  # Маршруты карты
+  get '/maps/:id', to: 'maps#show', as: 'franchise_map'
+  patch '/maps/update_coordinates/:id', to: 'maps#update_coordinates'
+  post '/maps/create_node', to: 'maps#create_node'
+  patch '/maps/update_node/:id', to: 'maps#update_node'
+  delete '/maps/delete_node/:id', to: 'maps#delete_node'
+
+  # Тайтлы и Серии
+  resources :works, only: [:show, :update] do
+    resources :episodes, only: [:create] 
+  end
+
+  resources :episodes, only: [:update, :destroy] do
+    member do
+      post 'add_character'
+      delete 'remove_character/:character_id', to: 'episodes#remove_character', as: 'remove_character'
+    end
+  end
   
   # Авторизация и ЛК
   get '/signup', to: 'users#new'
@@ -31,29 +51,23 @@ Rails.application.routes.draw do
 
   # Админка
   get '/admin', to: 'admin#index'
-
-  # Управление эпизодами
   get '/admin/episodes/new', to: 'admin#new_episode', as: 'new_episode_admin'
   post '/admin/episodes', to: 'admin#create_episode'
   delete '/admin/episodes/:id', to: 'admin#destroy_episode'
-  
-  # Управление персонажами
   get '/admin/characters/new', to: 'admin#new_character'
   post '/admin/characters', to: 'admin#create_character'
   get '/admin/characters/:id/edit', to: 'admin#edit_character', as: 'edit_character_admin'
   patch '/admin/characters/:id', to: 'admin#update_character'
   delete '/admin/characters/:id', to: 'admin#destroy_character'
-  
   get '/admin/glossary/new', to: 'admin#new_glossary'
   post '/admin/glossary', to: 'admin#create_glossary'
-  
   get '/admin/works/new', to: 'admin#new_work'
   post '/admin/works', to: 'admin#create_work'
   delete '/admin/works/:id', to: 'admin#destroy_work'
-  
   get '/admin/appearances/new', to: 'admin#new_appearance'
   post '/admin/appearances', to: 'admin#create_appearance'
   delete '/admin/appearances/:id', to: 'admin#destroy_appearance'
 
+  # API
   get '/api/franchises', to: 'api#franchises'
 end

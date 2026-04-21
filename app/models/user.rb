@@ -5,6 +5,7 @@ class User < ApplicationRecord
   has_many :favorite_characters, through: :favorites, source: :character
   has_many :user_progresses, dependent: :destroy
   has_many :works, through: :user_progresses
+  has_many :favorite_works, through: :favorites, source: :work
   def admin?
     user_role.role_name == 'Admin'
   end

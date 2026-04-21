@@ -1,0 +1,293 @@
+<% is_admin = defined?(logged_in?) && logged_in? && current_user.try(:admin?) %>
+<%# ИСПРАВЛЕНО: Теперь мы берем героев ТОЛЬКО из той же франшизы, что и сам тайтл %>
+<% franchise_characters = defined?(Character) ? Character.where(franchise_id: @work.franchise_id).order(:name) : [] %>
+
+<style>
+  body { margin: 0; background-color: #020617; color: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; }
+  .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 60vh; background-image: url('<%= @work.image_url.present? ? @work.image_url : "" %>'); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); z-index: -1; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+  .back-link { display: inline-flex; align-items: center; gap: 10px; color: #94a3b8; text-decoration: none; font-weight: 500; margin-bottom: 40px; transition: all 0.3s ease; padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
+  .back-link:hover { color: #ffffff; background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
+
+  .work-header { display: flex; gap: 50px; align-items: flex-end; margin-bottom: 60px; }
+  .work-poster { width: 280px; height: 400px; background-color: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); background-size: cover; background-position: center; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1); }
+  .work-info h1 { font-size: 48px; margin: 0 0 15px 0; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
+  .work-info .meta { color: #3b82f6; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px; }
+
+  .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: start; }
+  .content-section { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .content-section h2 { margin-top: 0; font-size: 22px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+  .content-section p { color: #94a3b8; line-height: 1.8; font-size: 16px; }
+
+  /* === СКРОЛЛБАР ДЛЯ СЕРИЙ === */
+  .episodes-scroll-area { max-height: 450px; overflow-y: auto; padding-right: 10px; margin-bottom: 15px; }
+  .episodes-scroll-area::-webkit-scrollbar { width: 6px; }
+  .episodes-scroll-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+  .episodes-scroll-area::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+
+  .episode-item { padding: 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; cursor: pointer; user-select: none; }
+  .episode-item:hover { background: rgba(255, 255, 255, 0.08); }
+  .episode-item.active { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
+  .episode-item.active .episode-name { color: #3b82f6; }
+  .episode-name { font-weight: 600; color: #f1f5f9; transition: color 0.2s; pointer-events: none;}
+  .episode-meta { color: #64748b; font-size: 13px; pointer-events: none;}
+
+  .plot-content { display: none; animation: fadeIn 0.3s ease; }
+  .plot-content.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* === ПЕРСОНАЖИ И УДАЛЕНИЕ === */
+  .characters-title { font-size: 16px; margin-top: 30px; margin-bottom: 15px; color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+  .character-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; }
+  .character-card { position: relative; display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #f8fafc; transition: transform 0.2s; }
+  .character-card:hover { transform: scale(1.05); color: #3b82f6; }
+  .character-avatar { width: 60px; height: 60px; border-radius: 50%; background-color: #1e293b; background-size: cover; background-position: center top; margin-bottom: 8px; border: 2px solid transparent; transition: border-color 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .character-card:hover .character-avatar { border-color: #3b82f6; }
+  .character-name { font-size: 11px; font-weight: 600; text-align: center; line-height: 1.2; }
+  
+  .char-remove-btn { position: absolute; top: -5px; right: 5px; width: 22px; height: 22px; background: #ef4444; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #0f172a; transition: transform 0.2s; z-index: 10; }
+  .char-remove-btn:hover { transform: scale(1.2); }
+
+  /* === ФОРМЫ И КНОПКИ === */
+  .btn-edit-inline { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid #3b82f6; border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-weight: bold; margin-left: auto; }
+  .btn-edit-inline:hover { background: #3b82f6; color: white; }
+  .btn-add-full { width: 100%; background: transparent; border: 2px dashed rgba(255,255,255,0.2); color: #94a3b8; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: all 0.2s; margin-top: 10px; }
+  .btn-add-full:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+  .form-control { width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 15px; font-family: inherit; font-size: 14px; outline: none; }
+  .form-control:focus { border-color: #3b82f6; }
+
+  /* Окна (Модалки) */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10001; }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal-box { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 30px; width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.3s ease; }
+  .modal-overlay.active .modal-box { transform: scale(1); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+  .btn-save { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  .btn-cancel { background: transparent; color: #94a3b8; border: 1px solid #475569; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+</style>
+
+<div class="hero-background"></div>
+
+<div class="container">
+  <a href="<%= franchise_map_path(@work.franchise_id) %>" class="back-link">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+    Вернуться к карте
+  </a>
+
+  <div class="work-header">
+    <div class="work-poster" style="<%= "background-image: url('#{@work.image_url}');" if @work.image_url.present? %>"></div>
+    <div class="work-info">
+      <div class="meta">Аниме • Франшиза <%= @work.franchise.name %></div>
+      <h1><%= @work.title %></h1>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="content-section" style="min-height: 400px;">
+      
+      <div id="plot-default" class="plot-content active">
+        <div style="display: flex; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 25px;">
+          <h2 style="margin: 0; border: none; padding: 0;">Сюжет сериала</h2>
+          <% if is_admin %><button class="btn-edit-inline" onclick="toggleWorkEdit()">✏️ Редактировать</button><% end %>
+        </div>
+        
+        <div id="work-view-mode">
+          <p style="white-space: pre-wrap;"><%= @work.try(:description).present? ? @work.description : "Описание еще не добавлено." %></p>
+        </div>
+        
+        <% if is_admin %>
+          <div id="work-edit-mode" style="display: none;">
+            <textarea id="work-desc-input" class="form-control" style="height: 200px;"><%= @work.try(:description) %></textarea>
+            <div class="modal-actions">
+              <button class="btn-cancel" onclick="toggleWorkEdit()">Отмена</button>
+              <button class="btn-save" onclick="saveWorkDescription(<%= @work.id %>)">Сохранить</button>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <% if @episodes.any? %>
+        <% @episodes.each_with_index do |episode, index| %>
+          <div id="plot-episode-<%= episode.id %>" class="plot-content">
+            
+            <div id="ep-view-<%= episode.id %>">
+              <div style="display: flex; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 25px;">
+                <h2 style="margin: 0; border: none; padding: 0;">Сюжет: <%= episode.try(:title) || "Эпизод #{index + 1}" %></h2>
+                <% if is_admin %><button class="btn-edit-inline" onclick="toggleEpEdit(<%= episode.id %>)">✏️ Редактировать</button><% end %>
+              </div>
+              
+              <p style="white-space: pre-wrap;"><%= episode.try(:description).present? ? episode.description : "Описание серии отсутствует." %></p>
+              
+              <div class="characters-title">Участвовали в эпизоде:</div>
+              <div class="character-grid">
+                <% characters = episode.respond_to?(:characters) ? episode.characters : [] %>
+                <% if characters.any? %>
+                  <% characters.each do |char| %>
+                    <a href="<%= character_profile_path(char) rescue '#' %>" class="character-card">
+                      <div class="character-avatar" style="<%= "background-image: url('#{char.image_url}');" if char.try(:image_url).present? %>"></div>
+                      <div class="character-name"><%= char.name %></div>
+                    </a>
+                  <% end %>
+                <% else %>
+                  <span style="font-size: 13px; color: #64748b;">Персонажи не добавлены.</span>
+                <% end %>
+              </div>
+            </div>
+
+            <% if is_admin %>
+              <div id="ep-edit-<%= episode.id %>" style="display: none;">
+                <h3 style="margin-top:0;">Редактирование серии</h3>
+                <input type="text" id="ep-title-<%= episode.id %>" class="form-control" value="<%= episode.title %>" placeholder="Название серии">
+                <input type="text" id="ep-duration-<%= episode.id %>" class="form-control" value="<%= episode.duration %>" placeholder="Хронометраж (например, 24:00)">
+                <textarea id="ep-desc-<%= episode.id %>" class="form-control" style="height: 120px;" placeholder="Сюжет серии..."><%= episode.description %></textarea>
+                
+                <div class="characters-title">Управление персонажами (Нажми ✕ чтобы удалить):</div>
+                <div class="character-grid" style="margin-bottom: 20px;">
+                  <% characters.each do |char| %>
+                    <div class="character-card">
+                      <div class="char-remove-btn" onclick="removeCharacter(<%= episode.id %>, <%= char.id %>)">✕</div>
+                      <div class="character-avatar" style="<%= "background-image: url('#{char.image_url}');" if char.try(:image_url).present? %>"></div>
+                      <div class="character-name"><%= char.name %></div>
+                    </div>
+                  <% end %>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+                  <select id="add-char-select-<%= episode.id %>" class="form-control" style="margin: 0;">
+                    <option value="">-- Выберите персонажа для добавления --</option>
+                    <% franchise_characters.each do |c| %>
+                      <option value="<%= c.id %>"><%= c.name %></option>
+                    <% end %>
+                  </select>
+                  <button class="btn-save" style="white-space: nowrap;" onclick="addCharacter(<%= episode.id %>)">Добавить героя</button>
+                </div>
+
+                <div class="modal-actions" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                  <button class="btn-cancel" onclick="toggleEpEdit(<%= episode.id %>)">Отмена</button>
+                  <button class="btn-save" onclick="saveEpisodeInfo(<%= episode.id %>)">Сохранить серию</button>
+                </div>
+              </div>
+            <% end %>
+
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="content-section">
+      <h2 style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 20px;">Список серий</h2>
+      
+      <div class="episodes-scroll-area">
+        <div class="episode-item js-episode-btn active" data-target="plot-default">
+          <span class="episode-name">О сериале</span>
+          <span class="episode-meta">Инфо</span>
+        </div>
+        
+        <% if @episodes.any? %>
+          <% @episodes.each_with_index do |episode, index| %>
+            <div class="episode-item js-episode-btn" data-target="plot-episode-<%= episode.id %>">
+              <span class="episode-name"><%= episode.try(:title) || "Эпизод #{index + 1}" %></span>
+              <span class="episode-meta"><%= episode.try(:duration) || "24:00" %></span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <% if is_admin %>
+        <button class="btn-add-full" onclick="openCreateEpModal()">+ Добавить серию</button>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% if is_admin %>
+  <div class="modal-overlay" id="create-ep-modal">
+    <div class="modal-box">
+      <h3 style="margin-top:0; color:white;">Добавить новую серию</h3>
+      <input type="text" id="new-ep-title" class="form-control" placeholder="Название (например: Эпизод 01)">
+      <input type="text" id="new-ep-duration" class="form-control" placeholder="Хронометраж (например: 24:00)">
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeCreateEpModal()">Отмена</button>
+        <button class="btn-save" onclick="createEpisode(<%= @work.id %>)">Создать</button>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+  document.addEventListener("turbo:load", function() {
+    const episodeBtns = document.querySelectorAll('.js-episode-btn');
+    const plotContents = document.querySelectorAll('.plot-content');
+    episodeBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        episodeBtns.forEach(b => b.classList.remove('active'));
+        plotContents.forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        const targetBlock = document.getElementById(this.getAttribute('data-target'));
+        if (targetBlock) targetBlock.classList.add('active');
+      });
+    });
+  });
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  window.toggleWorkEdit = function() {
+    const view = document.getElementById('work-view-mode');
+    const edit = document.getElementById('work-edit-mode');
+    if (edit.style.display === 'none') { view.style.display = 'none'; edit.style.display = 'block'; } 
+    else { view.style.display = 'block'; edit.style.display = 'none'; }
+  };
+  window.saveWorkDescription = function(workId) {
+    const newDesc = document.getElementById('work-desc-input').value;
+    fetch(`/works/${workId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+      body: JSON.stringify({ work: { description: newDesc } })
+    }).then(r => { if(r.ok) window.location.reload(); });
+  };
+
+  window.toggleEpEdit = function(epId) {
+    const view = document.getElementById(`ep-view-${epId}`);
+    const edit = document.getElementById(`ep-edit-${epId}`);
+    if (edit.style.display === 'none') { view.style.display = 'none'; edit.style.display = 'block'; } 
+    else { view.style.display = 'block'; edit.style.display = 'none'; }
+  };
+  window.saveEpisodeInfo = function(epId) {
+    const title = document.getElementById(`ep-title-${epId}`).value;
+    const duration = document.getElementById(`ep-duration-${epId}`).value;
+    const desc = document.getElementById(`ep-desc-${epId}`).value;
+    fetch(`/episodes/${epId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+      body: JSON.stringify({ episode: { title: title, duration: duration, description: desc } })
+    }).then(r => { if(r.ok) window.location.reload(); });
+  };
+
+  window.openCreateEpModal = function() { document.getElementById('create-ep-modal').classList.add('active'); }
+  window.closeCreateEpModal = function() { document.getElementById('create-ep-modal').classList.remove('active'); }
+  window.createEpisode = function(workId) {
+    const title = document.getElementById('new-ep-title').value;
+    const duration = document.getElementById('new-ep-duration').value;
+    fetch(`/works/${workId}/episodes`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+      body: JSON.stringify({ episode: { title: title, duration: duration } })
+    }).then(async r => { 
+      if(r.ok) window.location.reload(); 
+      else { const data = await r.json(); alert(`Ошибка: ${data.error}`); }
+    });
+  };
+
+  window.addCharacter = function(epId) {
+    const select = document.getElementById(`add-char-select-${epId}`);
+    const charId = select.value;
+    if (!charId) return alert("Выберите персонажа!");
+    fetch(`/episodes/${epId}/add_character`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+      body: JSON.stringify({ character_id: charId })
+    }).then(r => { if(r.ok) window.location.reload(); });
+  };
+  window.removeCharacter = function(epId, charId) {
+    if(!confirm("Удалить персонажа из этой серии?")) return;
+    fetch(`/episodes/${epId}/remove_character/${charId}`, {
+      method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken }
+    }).then(r => { if(r.ok) window.location.reload(); });
+  };
+</script>

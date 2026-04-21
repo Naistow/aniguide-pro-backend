@@ -93,7 +93,7 @@
     </style>
   </head>
 
-  <body class="<%= @franchise&.theme || 'default-theme' %> <%= 'turbo-native' if turbo_native_app? %>">
+  <body class="<%= @franchise&.theme || 'default-theme' %> <%= 'turbo-native' if defined?(turbo_native_app?) && turbo_native_app? %>">
     
     <%# Прячем шапку ТОЛЬКО на главной и страницах авторизации %>
     <% hide_nav = current_page?(root_path) || request.path.include?('/login') || request.path.include?('/signup') %>
@@ -105,7 +105,7 @@
           
           <div class="nav-actions">
             <button type="button" class="search-toggle-btn" id="search-toggle">🔍</button>
-            <% if logged_in? %>
+            <% if defined?(logged_in?) && logged_in? %>
               <a href="/profile" class="btn-nav" style="border-color: #2ecc71; color: #2ecc71;">👤 <%= current_user.username %></a>
               <%= button_to "Выход", logout_path, method: :delete, class: "btn-nav", style: "background: transparent; border: 1px solid #e74c3c; color: #e74c3c;" %>
             <% else %>

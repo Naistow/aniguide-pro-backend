@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_10_110856) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,6 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
     t.text "biography"
     t.integer "character_role_id", null: false
     t.datetime "created_at", null: false
+    t.text "description"
     t.integer "franchise_id", null: false
     t.text "history"
     t.string "name"
@@ -72,6 +73,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
     t.datetime "updated_at", null: false
     t.index ["character_role_id"], name: "index_characters_on_character_role_id"
     t.index ["franchise_id"], name: "index_characters_on_franchise_id"
+  end
+
+  create_table "characters_episodes", id: false, force: :cascade do |t|
+    t.bigint "character_id", null: false
+    t.bigint "episode_id", null: false
   end
 
   create_table "episode_appearances", force: :cascade do |t|
@@ -86,6 +92,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
   create_table "episodes", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "duration"
     t.integer "episode_number"
     t.string "title"
     t.datetime "updated_at", null: false
@@ -98,6 +105,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.integer "work_id"
     t.index ["character_id"], name: "index_favorites_on_character_id"
     t.index ["user_id"], name: "index_favorites_on_user_id"
   end
@@ -108,6 +116,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
     t.string "name"
     t.string "theme"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "glossaries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.bigint "franchise_id", null: false
+    t.string "image_url"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["franchise_id"], name: "index_glossaries_on_franchise_id"
   end
 
   create_table "guide_steps", force: :cascade do |t|
@@ -184,9 +202,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
 
   create_table "works", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.text "description"
     t.integer "franchise_id", null: false
+    t.string "image_url"
     t.integer "media_type_id", null: false
+    t.integer "parent_id"
     t.text "plot_summary"
+    t.integer "pos_x"
+    t.integer "pos_y"
     t.string "poster_url"
     t.integer "release_year"
     t.text "synopsis"
@@ -207,6 +230,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_075552) do
   add_foreign_key "episodes", "works"
   add_foreign_key "favorites", "characters"
   add_foreign_key "favorites", "users"
+  add_foreign_key "glossaries", "franchises"
   add_foreign_key "guide_steps", "watch_guides"
   add_foreign_key "guide_steps", "works"
   add_foreign_key "lore_glossaries", "franchises"

@@ -1,0 +1,165 @@
+<% is_admin = defined?(logged_in?) && logged_in? && current_user.try(:admin?) %>
+<% portrait_url = @character.portrait.attached? ? url_for(@character.portrait) : "" %>
+
+<style>
+  /* Убрали жесткий фон, чтобы работали темы франшиз! */
+  body { margin: 0; color: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+  .btn-like { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: all 0.2s; margin-top: 15px; width: 100%; font-size: 15px; }
+  .btn-like:hover { background: rgba(255,255,255,0.2); }
+  .btn-like.active { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #ef4444; }
+  .btn-like.active:hover { background: rgba(239, 68, 68, 0.3); }
+  
+  .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 50vh; background-image: url('<%= portrait_url %>'); background-size: cover; background-position: center 20%; filter: blur(30px) brightness(0.3); z-index: -1; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 10; }
+  
+  .back-btn { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: bold; margin-bottom: 30px; transition: color 0.2s; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  .back-btn:hover { color: #ffffff; }
+
+  .char-layout { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: start; }
+
+  .char-sidebar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+  .char-portrait { width: 100%; aspect-ratio: 3/4; background-color: rgba(255,255,255,0.05); border-radius: 12px; background-size: cover; background-position: center top; margin-bottom: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
+  .char-name-jp { color: rgba(255,255,255,0.5); font-size: 14px; letter-spacing: 2px; margin-bottom: 5px; }
+  .char-name { font-size: 32px; margin: 0 0 15px 0; font-weight: 800; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+  .char-content { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-height: 400px; }
+  .section-title { margin-top: 0; font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  .char-desc { color: rgba(255,255,255,0.9); line-height: 1.8; font-size: 16px; white-space: pre-wrap; }
+
+  .work-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 10px; color: #f8fafc; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s; margin-right: 10px; margin-bottom: 10px; backdrop-filter: blur(5px); }
+  .work-badge:hover { background: rgba(255,255,255,0.2); color: white; transform: translateY(-2px); border-color: white; }
+
+  .btn-edit-inline { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-weight: bold; backdrop-filter: blur(5px); }
+  .btn-edit-inline:hover { background: white; color: black; }
+  .form-control { width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 15px; font-family: inherit; font-size: 14px; outline: none; }
+  .form-control:focus { border-color: #ffffff; }
+  .btn-save { background: white; color: black; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+  .btn-cancel { background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.4); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+</style>
+
+<div class="hero-background"></div>
+
+<div class="container">
+  <a onclick="javascript:history.back()" class="back-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+    Вернуться назад
+  </a>
+
+  <div class="char-layout">
+    <div class="char-sidebar">
+      <div class="char-portrait" style="<%= "background-image: url('#{portrait_url}');" if portrait_url.present? %>">
+        <% unless portrait_url.present? %>
+          <div style="display:flex; height:100%; align-items:center; justify-content:center; color:rgba(255,255,255,0.5); font-size: 13px;">Нет фото</div>
+        <% end %>
+      </div>
+      <div class="char-name-jp">CHARACTER</div>
+      <h1 class="char-name"><%= @character.name %></h1>
+      <% if defined?(logged_in?) && logged_in? %>
+        <% favorite = current_user.favorites.find_by(character_id: @character.id) %>
+        <button class="btn-like <%= 'active' if favorite %>" onclick="toggleLike(<%= @character.id %>, <%= favorite ? favorite.id : 'null' %>)">
+          <%= favorite ? '❤️ В избранном' : '🤍 В избранное' %>
+        </button>
+      <% else %>
+        <div style="font-size: 12px; color: rgba(255,255,255,0.5);">Войдите, чтобы лайкнуть</div>
+      <% end %>
+    </div>
+
+    <div class="char-content">
+      <div class="section-title">
+        <span>История персонажа</span>
+        <% if is_admin %><button class="btn-edit-inline" onclick="toggleEdit()">✏️ Ред.</button><% end %>
+      </div>
+
+      <div id="view-mode">
+        <p class="char-desc"><%= @character.try(:description).present? ? @character.description : "Биография персонажа пока пуста." %></p>
+      </div>
+
+      <% if is_admin %>
+        <div id="edit-mode" style="display: none;">
+          <label style="color:rgba(255,255,255,0.7); font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">Имя персонажа</label>
+          <input type="text" id="edit-name" class="form-control" value="<%= @character.name %>">
+          
+          <label style="color:rgba(255,255,255,0.7); font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">Загрузить портрет (Файл)</label>
+          <input type="file" id="edit-portrait" class="form-control" accept="image/*">
+          
+          <label style="color:rgba(255,255,255,0.7); font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">Биография</label>
+          <textarea id="edit-desc" class="form-control" style="height: 200px;"><%= @character.try(:description) %></textarea>
+          
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn-cancel" onclick="toggleEdit()">Отмена</button>
+            <button class="btn-save" onclick="saveCharacter(<%= @character.id %>)">Сохранить</button>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="section-title" style="margin-top: 50px;">Участвует в тайтлах</div>
+      <% if @works.any? %>
+        <div style="display: flex; flex-wrap: wrap;">
+          <% @works.each do |work| %>
+            <a href="<%= work_path(work) %>" class="work-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <%= work.title %>
+            </a>
+          <% end %>
+        </div>
+      <% else %>
+        <p style="color: rgba(255,255,255,0.5); font-size: 14px;">Персонаж пока не привязан ни к одному тайтлу.</p>
+      <% end %>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleEdit() {
+    const view = document.getElementById('view-mode');
+    const edit = document.getElementById('edit-mode');
+    if (edit.style.display === 'none') { view.style.display = 'none'; edit.style.display = 'block'; } 
+    else { view.style.display = 'block'; edit.style.display = 'none'; }
+  }
+
+  function toggleLike(charId, favId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    if (favId) {
+      fetch(`/favorites/${favId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken } })
+      .then(r => { if(r.ok) window.location.reload(); });
+    } else {
+      fetch(`/favorites`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        body: JSON.stringify({ character_id: charId })
+      }).then(r => { if(r.ok) window.location.reload(); });
+    }
+  }
+
+  // ОБНОВЛЕНО: Отправка данных через FormData для поддержки файлов
+  // ОБНОВЛЕНО: Отправка данных + вывод точной ошибки
+  function saveCharacter(charId) {
+    const newName = document.getElementById('edit-name').value;
+    const newDesc = document.getElementById('edit-desc').value;
+    const fileInput = document.getElementById('edit-portrait');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    const formData = new FormData();
+    formData.append('character[name]', newName);
+    formData.append('character[description]', newDesc);
+    
+    if (fileInput.files.length > 0) {
+      formData.append('character[portrait]', fileInput.files[0]);
+    }
+
+    fetch(`/character/${charId}`, {
+      method: 'PATCH',
+      headers: { 'X-CSRF-Token': csrfToken },
+      body: formData
+    }).then(async response => {
+      if (response.ok) { 
+        window.location.reload(); 
+      } else { 
+        const data = await response.json();
+        alert("Ошибка сервера: " + data.error); 
+      }
+    }).catch(e => alert("Сетевая ошибка: " + e.message));
+  }
+</script>

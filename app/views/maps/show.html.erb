@@ -1,0 +1,137 @@
+<%# Проверяем, авторизован ли пользователь и является ли он админом %>
+<% is_admin = defined?(logged_in?) && logged_in? && current_user.try(:admin?) %>
+
+<style>
+  /* Адаптируем высоту карты под шапку (100% высоты экрана МИНУС 56px высоты шапки) */
+  .map-viewport { 
+    width: 100%; 
+    height: calc(100vh - 56px); 
+    position: relative; 
+    cursor: grab; 
+    background: linear-gradient(-45deg, #010101, #05102a, #100820, #05102a, #010101); 
+    background-size: 500% 500%; 
+    animation: gradientBG 20s ease infinite; 
+    overflow: hidden; 
+  }
+  .map-viewport:active { cursor: grabbing; }
+  @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+  
+  .map-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #010101, #102040, #3a1a5a, #1a0a3a, #102040, #010101); background-size: 600% 600%; animation: overlayGradientBG 25s ease-in-out infinite; background-blend-mode: screen; opacity: 0.15; pointer-events: none; }
+  @keyframes overlayGradientBG { 0% { background-position: 100% 50%; } 50% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+  .map-canvas { position: absolute; top: 0; left: 0; width: 5000px; height: 5000px; transform-origin: 0 0; }
+  .map-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  path.connection { stroke: rgba(255, 255, 255, 0.4); stroke-width: 2px; }
+
+  .map-node { position: absolute; width: 90px; height: 90px; border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 50%; background-color: rgba(255, 255, 255, 0.05); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: white; font-size: 11px; font-weight: bold; padding: 10px; text-shadow: 0px 0px 4px rgba(0,0,0,1), 0px 0px 8px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,1); box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); transform: translate(-50%, -50%); transition: box-shadow 0.2s, transform 0.2s; user-select: none; }
+  .map-node:hover { box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); transform: translate(-50%, -50%) scale(1.1); cursor: pointer; }
+
+  #flash-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; opacity: 0; pointer-events: none; z-index: 9999; transition: opacity 0.5s ease-in-out; }
+  #flash-overlay.active { opacity: 1; }
+
+  /* Админские элементы (Они теперь рендерятся только для админов) */
+  .context-menu { position: absolute; display: none; background: #ffffff; border-radius: 12px; padding: 8px 0; min-width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.1); z-index: 10000; color: #334155; font-size: 14px; font-weight: 500; overflow: hidden; transform-origin: top left; }
+  .context-menu.active { display: block; animation: menuPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  @keyframes menuPop { 0% { opacity: 0; transform: scale(0.8) translateY(-10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+  .menu-item { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s ease; }
+  .menu-item span, .menu-item svg { opacity: 0; animation: textFadeIn 0.3s ease forwards 0.1s; }
+  @keyframes textFadeIn { to { opacity: 1; } }
+  .menu-item:hover { background: #f1f5f9; color: #0f172a; }
+  .menu-item.delete { color: #ef4444; border-top: 1px solid #f1f5f9; margin-top: 4px; padding-top: 12px;}
+  .menu-item.delete:hover { background: #fef2f2; color: #dc2626; }
+  .menu-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10001; }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal-box { background: white; border-radius: 12px; padding: 24px; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); transform: scale(0.9); transition: transform 0.3s ease; }
+  .modal-overlay.active .modal-box { transform: scale(1); }
+  .modal-title { margin-top: 0; font-size: 18px; color: #0f172a; margin-bottom: 16px; font-weight: bold;}
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; color: #64748b; margin-bottom: 6px; font-weight: bold; }
+  .form-control { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+  .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+  .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; font-size: 13px;}
+  .btn-cancel { background: #e2e8f0; color: #475569; }
+  .btn-cancel:hover { background: #cbd5e1; }
+  .btn-save { background: #3b82f6; color: white; }
+  .btn-save:hover { background: #2563eb; }
+  .btn-danger { background: #ef4444; color: white; }
+  .btn-danger:hover { background: #dc2626; }
+  .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); cursor: pointer; z-index: 9998; transition: transform 0.2s, background 0.2s; }
+  .fab:hover { background: #2563eb; transform: scale(1.1); }
+  .fab svg { width: 28px; height: 28px; }
+</style>
+
+<div class="map-viewport" 
+     data-controller="map" 
+     data-map-is-admin-value="<%= is_admin %>"
+     data-action="contextmenu->map#showContextMenu click->map#hideContextMenu">
+  
+  <div class="map-overlay"></div>
+
+  <div class="map-canvas" data-map-target="canvas">
+    <svg class="map-svg" data-map-target="svg"></svg>
+    <% @works.each do |work| %>
+      <div class="map-node" 
+           data-map-target="node" 
+           data-id="<%= work.id %>" 
+           data-parent-id="<%= work.parent_id %>" 
+           data-image-url="<%= work.image_url %>"
+           style="left: <%= work.pos_x %>px; top: <%= work.pos_y %>px; <%= "background-image: url('#{work.image_url}');" if work.image_url.present? %>">
+        <%= work.title.truncate(35) %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if is_admin %>
+    <div class="fab" data-action="click->map#openCreateRootModal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </div>
+
+    <div class="context-menu" data-map-target="adminMenu">
+      <div class="menu-item" data-action="click->map#menuEdit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        <span>Редактировать</span>
+      </div>
+      <div class="menu-item" data-action="click->map#menuAddChild">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+        <span>Добавить продолжение</span>
+      </div>
+      <div class="menu-item delete" data-action="click->map#menuDelete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <span>Удалить узел</span>
+      </div>
+    </div>
+
+    <div class="modal-overlay" data-map-target="modal">
+      <div class="modal-box" data-action="click->map#stopPropagation">
+        <div class="modal-title">Редактировать узел</div>
+        <div class="form-group"><label>Название тайтла</label><input type="text" class="form-control" data-map-target="editTitle"></div>
+        <div class="form-group"><label>Связь (Родительский сезон)</label><select class="form-control" data-map-target="editParent"></select></div>
+        <div class="form-group"><label>Ссылка на постер</label><input type="text" class="form-control" data-map-target="editImage"></div>
+        <div class="modal-actions"><button class="btn btn-cancel" data-action="click->map#closeModal">Отмена</button><button class="btn btn-save" data-action="click->map#saveNodeInfo">Сохранить</button></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" data-map-target="createRootModal">
+      <div class="modal-box" data-action="click->map#stopPropagation">
+        <div class="modal-title">Создать новую ветку (Корень)</div>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Появится в центре текущего экрана.</p>
+        <div class="form-group"><label>Название</label><input type="text" class="form-control" data-map-target="newRootTitle"></div>
+        <div class="form-group"><label>Ссылка на постер</label><input type="text" class="form-control" data-map-target="newRootImage"></div>
+        <div class="modal-actions"><button class="btn btn-cancel" data-action="click->map#closeCreateRootModal">Отмена</button><button class="btn btn-save" data-action="click->map#executeCreateRoot">Создать</button></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" data-map-target="deleteModal">
+      <div class="modal-box" data-action="click->map#stopPropagation">
+        <div class="modal-title" style="color: #ef4444;">Удалить тайтл?</div>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 24px;">Вы уверены? Связанные продолжения станут независимыми.</p>
+        <div class="modal-actions"><button class="btn btn-cancel" data-action="click->map#closeDeleteModal">Отмена</button><button class="btn btn-danger" data-action="click->map#executeDelete">Да, удалить</button></div>
+      </div>
+    </div>
+  <% end %>
+
+</div>
+
+<div id="flash-overlay"></div>

@@ -5,13 +5,12 @@ class Character < ApplicationRecord
   has_many :favorites, dependent: :destroy
   has_many :appearances, dependent: :destroy
   has_many :works, through: :appearances
+  
+  # Портрет персонажа
   has_one_attached :portrait
   
-  # НОВЫЕ СВЯЗИ ДЛЯ СЕРИЙ
-  has_many :episode_appearances, dependent: :destroy
-  has_many :episodes, through: :episode_appearances
-
-  has_one_attached :portrait
+  # Связь с эпизодами многие-ко-многим
+  has_and_belongs_to_many :episodes
 
   STATUSES = ['Жив', 'Мертв', 'Неизвестно', 'Запечатан', 'Перерожден']
 

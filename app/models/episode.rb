@@ -1,10 +1,10 @@
 class Episode < ApplicationRecord
   belongs_to :work
   
-  # Связь: у эпизода много появлений персонажей
-  has_many :episode_appearances, dependent: :destroy
-  has_many :characters, through: :episode_appearances
+  # Прямая связь многие-ко-многим (через скрытую таблицу characters_episodes)
+  has_and_belongs_to_many :characters
 
-  validates :episode_number, presence: true
+  # Валидации
   validates :title, presence: true
+  # validates :episode_number, presence: true # Раскомментируй, если добавишь это поле в базу
 end

@@ -6,6 +6,8 @@ class Work < ApplicationRecord
   has_many :appearances, dependent: :destroy
   has_many :characters, through: :appearances
   has_many :user_progresses, dependent: :destroy
+  
+  # Связь с эпизодами
   has_many :episodes, dependent: :destroy
 
   validates :title, presence: true

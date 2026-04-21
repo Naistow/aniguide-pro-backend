@@ -1,47 +1,153 @@
-<div style="max-width: 1100px; margin: 40px auto; padding: 20px;">
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 30px;">
-    <div>
-      <a href="/" style="text-decoration: none; font-size: 14px;">← Вернуться на главную</a>
-      <h1 class="theme-title">Архив героев: <%= @franchise.name %></h1>
-    </div>
-    
-    <% if logged_in? && current_user.admin? %>
-      <a href="/admin/characters/new?franchise_id=<%= @franchise.id %>" class="theme-btn" style="padding: 8px 15px; font-size: 13px;">+ Добавить героя</a>
-    <% end %>
-  </div>
+<% is_admin = defined?(logged_in?) && logged_in? && current_user.try(:admin?) %>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
-    <% @characters.each do |char| %>
-      
-      <div class="theme-card">
-        
-        <div style="position: absolute; top: 15px; right: 15px;">
-          <% if logged_in? %>
-            <% fav = current_user.favorites.find_by(character: char) %>
-            <%= button_to (fav ? "❤️" : "🤍"), fav ? favorite_path(fav) : favorites_path(character_id: char.id), method: (fav ? :delete : :post), style: "background:none; border:none; cursor:pointer; font-size: 22px;" %>
-          <% end %>
-        </div>
+<style>
+  body { margin: 0; color: #f8fafc; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+  /* ИСПРАВЛЕНО ЗДЕСЬ: blur(10px) вместо blur(30px) */
+  .roster-bg { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-size: cover; background-position: center; filter: blur(10px) brightness(0.3); transition: background-image 0.5s ease-in-out; z-index: -2; }
+  .roster-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%); z-index: -1; }
 
-        <div class="theme-badge"><%= char.character_role.name %></div>
-        
-        <div style="font-size: 26px; font-weight: bold; margin-bottom: 15px; color: white;"><%= char.name %></div>
-        <p style="line-height: 1.6; font-size: 14px; min-height: 65px; opacity: 0.9;">
-          <%= truncate(char.biography, length: 130) %>
-        </p>
+  .carousel-viewport { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
 
-        <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center;">
-          <a href="<%= character_profile_path(char) %>" class="theme-btn" style="width: 100%; box-sizing: border-box;">Открыть личное дело</a>
-        </div>
+  .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s ease; z-index: 30; outline: none; }
+  .nav-arrow:hover { background: rgba(255,255,255,0.2); border-color: #ffffff; transform: translateY(-50%) scale(1.1); }
+  .nav-arrow:active { transform: translateY(-50%) scale(0.95); }
+  .nav-arrow.left { left: 50px; }
+  .nav-arrow.right { right: 50px; }
+  .nav-arrow svg { width: 30px; height: 30px; }
 
-        <% if logged_in? && current_user.admin? %>
-          <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 15px;">
-            <a href="/admin/characters/<%= char.id %>/edit" style="text-decoration: none; font-size: 16px;">📝</a>
-            <%= button_to '🗑', "/admin/characters/#{char.id}", method: :delete, data: { turbo_confirm: 'Точно удалить?' }, style: "background: none; border: none; cursor: pointer; padding: 0; font-size: 16px;" %>
-          </div>
-        <% end %>
-        
+  .carousel-track { position: relative; width: 400px; height: 600px; perspective: 1000px; }
+  .char-card-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; transform: translateX(100vw) scale(0.8); display: flex; align-items: center; justify-content: center; }
+
+  .char-card { position: relative; width: 360px; height: 550px; background: rgba(0,0,0,0.6); border-radius: 24px; border: 2px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; transition: transform 0.3s ease, box-shadow 0.3s ease; backdrop-filter: blur(5px); }
+  .char-card:hover { transform: translateY(-10px); box-shadow: 0 35px 60px -15px rgba(255,255,255, 0.2); border-color: rgba(255,255,255, 0.4); }
+  
+  .char-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center top; z-index: 1; transition: transform 0.5s ease; }
+  .char-card:hover .char-image { transform: scale(1.05); }
+
+  .char-info { position: relative; z-index: 2; background: linear-gradient(to top, rgba(0,0,0, 0.9) 0%, rgba(0,0,0, 0.6) 50%, transparent 100%); padding: 40px 20px 25px 20px; text-align: center; }
+  .char-info h2 { margin: 0 0 15px 0; font-size: 32px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  
+  .btn-profile { display: inline-block; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; text-decoration: none; font-weight: bold; padding: 12px 30px; border-radius: 12px; transition: all 0.2s; backdrop-filter: blur(5px); }
+  .btn-profile:hover { background: #ffffff; color: #000000; transform: scale(1.05); }
+
+  .empty-state { color: #94a3b8; font-size: 20px; text-align: center; width: 100vw; margin-top: 40vh; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+  /* === АДМИНСКИЕ ЭЛЕМЕНТЫ === */
+  .fab-add { position: absolute; top: 90px; right: 40px; background: #3b82f6; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; color: white; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 40; transition: transform 0.2s; }
+  .fab-add:hover { transform: scale(1.1); background: #2563eb; }
+  
+  .modal-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: #0f172a; padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); width: 300px; }
+  .form-control { width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 15px; font-family: inherit; font-size: 14px; outline: none; }
+  .btn-save { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+</style>
+
+<div id="roster-bg" class="roster-bg"></div>
+<div class="roster-overlay"></div>
+
+<% if is_admin %>
+  <div class="fab-add" onclick="document.getElementById('create-modal').classList.add('active')">+</div>
+  
+  <div class="modal-overlay" id="create-modal">
+    <div class="modal-box">
+      <h3 style="margin-top:0;">Добавить персонажа</h3>
+      <input type="text" id="new-char-name" class="form-control" placeholder="Имя персонажа">
+      <div style="display:flex; gap:10px;">
+        <button class="form-control" style="background:transparent; text-align:center; cursor:pointer;" onclick="document.getElementById('create-modal').classList.remove('active')">Отмена</button>
+        <button class="btn-save" onclick="createCharacter(<%= @franchise.id %>)">Создать</button>
       </div>
-
-    <% end %>
+    </div>
   </div>
-</div>
+<% end %>
+
+<% if @characters.any? %>
+  <div class="carousel-viewport">
+    <button class="nav-arrow left" onclick="prevChar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+
+    <div class="carousel-track" id="carousel-track">
+      <% @characters.each do |char| %>
+        <% portrait_url = char.portrait.attached? ? url_for(char.portrait) : "" %>
+        <div class="char-card-wrapper js-char-slide" data-bg="<%= portrait_url %>">
+          <div class="char-card">
+            <div class="char-image" style="<%= "background-image: url('#{portrait_url}');" if portrait_url.present? %>"></div>
+            <div class="char-info">
+              <h2><%= char.name %></h2>
+              <a href="<%= character_profile_path(char) %>" class="btn-profile">Открыть профиль</a>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <button class="nav-arrow right" onclick="nextChar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+  </div>
+<% else %>
+  <div class="empty-state"><p>Персонажи для этой вселенной еще не добавлены.</p></div>
+<% end %>
+
+<script>
+  document.addEventListener("turbo:load", function() {
+    const slides = document.querySelectorAll('.js-char-slide');
+    const bg = document.getElementById('roster-bg');
+    
+    window.createCharacter = function(franchiseId) {
+      const name = document.getElementById('new-char-name').value;
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      
+      fetch(`/franchise/${franchiseId}/characters`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        body: JSON.stringify({ name: name })
+      }).then(async r => { 
+        if(r.ok) window.location.reload(); 
+        else { const data = await r.json(); alert("Ошибка: " + data.error); }
+      });
+    }
+
+    if (slides.length === 0) return;
+
+    let currentIndex = 0; let isAnimating = false;
+
+    function initCarousel() {
+      slides.forEach((slide, i) => {
+        slide.style.transition = 'none';
+        if (i === currentIndex) { slide.style.transform = 'translateX(0) scale(1)'; slide.style.opacity = '1'; slide.style.pointerEvents = 'all'; slide.style.zIndex = '10'; } 
+        else { slide.style.transform = 'translateX(100vw) scale(0.8)'; slide.style.opacity = '0'; slide.style.pointerEvents = 'none'; slide.style.zIndex = '1'; }
+      });
+      updateBackground();
+    }
+
+    function updateBackground() {
+      const imgUrl = slides[currentIndex].getAttribute('data-bg');
+      if (imgUrl) bg.style.backgroundImage = `url('${imgUrl}')`; else bg.style.backgroundImage = 'none';
+    }
+
+    window.moveSlide = function(direction) {
+      if (slides.length <= 1 || isAnimating) return;
+      isAnimating = true;
+      const currentSlide = slides[currentIndex];
+      let nextIndex = direction === 'next' ? (currentIndex + 1) % slides.length : (currentIndex - 1 + slides.length) % slides.length;
+      const nextSlide = slides[nextIndex];
+      const outX = direction === 'next' ? '-100vw' : '100vw'; 
+      const inX = direction === 'next' ? '100vw' : '-100vw';  
+
+      nextSlide.style.transition = 'none'; nextSlide.style.transform = `translateX(${inX}) scale(0.8)`; nextSlide.style.opacity = '0'; nextSlide.style.zIndex = '10'; currentSlide.style.zIndex = '1';
+      void nextSlide.offsetWidth;
+      const transitionSetting = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s ease';
+      currentSlide.style.transition = transitionSetting; currentSlide.style.transform = `translateX(${outX}) scale(0.8)`; currentSlide.style.opacity = '0'; currentSlide.style.pointerEvents = 'none';
+      nextSlide.style.transition = transitionSetting; nextSlide.style.transform = 'translateX(0) scale(1)'; nextSlide.style.opacity = '1'; nextSlide.style.pointerEvents = 'all';
+
+      currentIndex = nextIndex; updateBackground();
+      setTimeout(() => { isAnimating = false; }, 600);
+    }
+
+    window.nextChar = () => window.moveSlide('next'); window.prevChar = () => window.moveSlide('prev');
+    window.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') window.nextChar(); if (e.key === 'ArrowLeft') window.prevChar(); });
+    initCarousel();
+  });
+</script>

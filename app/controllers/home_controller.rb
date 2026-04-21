@@ -9,9 +9,9 @@ class HomeController < ApplicationController
     @steps = guide ? guide.guide_steps.includes(work: :media_type).order(:step_number) : []
   end
 
-  def characters
+def characters
     @franchise = Franchise.find(params[:id])
-    @characters = @franchise.characters.includes(:character_role)
+    @characters = Character.where(franchise_id: @franchise.id).order(:name)
   end
 
   def glossary

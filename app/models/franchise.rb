@@ -5,6 +5,7 @@ class Franchise < ApplicationRecord
   has_many :works, dependent: :destroy
   has_many :favorites, dependent: :destroy
   has_many :reviews, dependent: :destroy # Новое!
+  has_many :glossaries, dependent: :destroy
   
   def average_rating
     reviews.average(:rating)&.round(1) || 0

@@ -1,26 +1,268 @@
-<div style="max-width: 900px; margin: 40px auto; padding: 20px; color: white; font-family: 'Segoe UI', sans-serif;">
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #2ecc71; padding-bottom: 15px; margin-bottom: 30px;">
-    <div>
-      <a href="/" style="color: #2ecc71; text-decoration: none; font-size: 14px;">← Назад</a>
-      <h1 style="margin: 10px 0 0 0;">Глоссарий: <%= @franchise.name %></h1>
-    </div>
+<% is_admin = defined?(logged_in?) && logged_in? && current_user.try(:admin?) %>
+<% items = defined?(Glossary) ? Glossary.where(franchise_id: @franchise.id).order(:id) : [] %>
 
-    <% if logged_in? && current_user.admin? %>
-      <a href="/admin/glossary/new?franchise_id=<%= @franchise.id %>" 
-         style="background: #9b59b6; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px;">
-         + Добавить термин
-      </a>
-    <% end %>
+<style>
+  body { margin: 0; background-color: #050505; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%); min-height: 100vh; overflow-x: hidden; }
+  
+  .inventory-wrapper { max-width: 1300px; margin: 0 auto; padding: 40px 20px; position: relative; }
+  
+  .header { border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 30px; }
+  .header h1 { margin: 0; font-size: 32px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+  .inventory-main { display: flex; align-items: flex-start; gap: 30px; transition: margin-right 0.3s ease; }
+  .inventory-left { flex-grow: 1; transition: width 0.3s ease; width: 100%; }
+  
+  .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; background: rgba(15,23,42,0.6); padding: 20px; border: 1px solid #1e293b; border-radius: 4px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+  
+  .slot { width: 90px; height: 90px; background: #0f172a; border: 2px solid #334155; border-radius: 4px; cursor: pointer; position: relative; transition: all 0.1s; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+  .slot:hover { border-color: #94a3b8; transform: scale(1.05); z-index: 10; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+  .slot.active { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.5); }
+  
+  .slot-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.2s; z-index: 1; }
+  .slot:hover .slot-img { transform: scale(1.1); }
+  .slot-name { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.7); color: #fff; font-size: 10px; font-weight: bold; text-align: center; padding: 3px 0; z-index: 2; backdrop-filter: blur(2px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
+
+  /* ПРАВАЯ ПАНЕЛЬ */
+  .inventory-right { position: fixed; top: 100px; right: -450px; width: 400px; height: calc(100vh - 120px); overflow-y: auto; transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 50; }
+  .inventory-right.show { right: 20px; }
+  .inventory-right::-webkit-scrollbar { width: 6px; }
+  .inventory-right::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+  .inventory-right::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+
+  .item-details { position: relative; background: linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%); border: 1px solid #334155; padding: 50px 30px 30px 30px; border-radius: 12px; box-shadow: -10px 20px 50px rgba(0,0,0,0.7); backdrop-filter: blur(10px); min-height: 100%; }
+
+  .close-panel-btn { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #cbd5e1; font-size: 32px; font-weight: bold; cursor: pointer; transition: transform 0.2s, color 0.2s; z-index: 100; line-height: 1; padding: 0; }
+  .close-panel-btn:hover { color: #ef4444; transform: scale(1.1); }
+
+  .detail-img-box { width: 100%; height: 250px; background: #020617; border: 1px solid #334155; margin-bottom: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); }
+  .detail-img { width: 90%; height: 90%; background-size: contain; background-position: center; background-repeat: no-repeat; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+  
+  .detail-title { font-size: 24px; color: #fff; margin: 0 0 15px 0; font-weight: 600; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+  .detail-desc { font-size: 15px; color: #cbd5e1; line-height: 1.6; white-space: pre-wrap; }
+
+  .empty-inv { grid-column: 1 / -1; text-align: center; color: #475569; padding: 40px; font-size: 18px; }
+
+  .fab-add { position: absolute; top: 90px; right: 40px; background: #3b82f6; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; color: white; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 40; transition: transform 0.2s; }
+  .fab-add:hover { transform: scale(1.1); background: #2563eb; }
+  
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 150; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: #0f172a; padding: 30px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); width: 350px; }
+  
+  .form-control { width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 15px; font-family: inherit; font-size: 14px; outline: none; }
+  .form-control:focus { border-color: #3b82f6; }
+  .btn-save { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  .btn-cancel { background: transparent; color: #94a3b8; border: 1px solid #475569; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  .btn-danger { display: block; width: 100%; margin-top: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
+  .btn-danger:hover { background: #ef4444; color: white; }
+  .btn-edit-inline { background: transparent; color: #3b82f6; border: 1px solid #3b82f6; border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+  .btn-edit-inline:hover { background: #3b82f6; color: white; }
+
+  /* === ИСПРАВЛЕНО: Идеальная мобильная версия === */
+  @media (max-width: 768px) {
+    /* Панель открывается СТРОГО ниже навигационного меню (оно ~65px) */
+    .inventory-right { width: 100%; right: -100%; top: 70px; height: calc(100vh - 70px); z-index: 9999; }
+    .inventory-right.show { right: 0; }
+    .item-details { border-radius: 0; border: none; min-height: 100%; padding-top: 60px; }
+    
+    /* Крестик стал заметным, красным и сдвинут ниже навигации */
+    .close-panel-btn { 
+      top: 15px; 
+      right: 15px; 
+      font-size: 28px; 
+      color: white; 
+      background: #ef4444; 
+      width: 40px; 
+      height: 40px; 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+    }
+    .close-panel-btn:hover { color: white; background: #dc2626; transform: scale(1.05); }
+  }
+</style>
+
+<% if is_admin %>
+  <div class="fab-add" onclick="document.getElementById('create-modal').classList.add('active')">+</div>
+  
+  <div class="modal-overlay" id="create-modal">
+    <div class="modal-box">
+      <h3 style="margin-top:0; color: white;">Добавить в Архив</h3>
+      <input type="text" id="new-item-title" class="form-control" placeholder="Название предмета/термина">
+      <div style="display:flex; gap:10px; justify-content: flex-end;">
+        <button class="btn-cancel" onclick="document.getElementById('create-modal').classList.remove('active')">Отмена</button>
+        <button class="btn-save" onclick="createGlossaryItem(<%= @franchise.id %>)">Создать слот</button>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="inventory-wrapper">
+  <div class="header">
+    <h1>Архив Данных</h1>
   </div>
 
-  <% if @terms.any? %>
-    <% @terms.each do |term| %>
-      <div style="background: #2a2a3b; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #2ecc71;">
-        <div style="font-size: 20px; font-weight: bold; color: #2ecc71; margin-bottom: 5px;"><%= term.term %></div>
-        <div style="color: #bdc3c7; line-height: 1.5;"><%= term.definition %></div>
+  <div class="inventory-main" id="inventory-main">
+    <div class="inventory-left">
+      <div class="inventory-grid">
+        <% if items.any? %>
+          <% items.each do |item| %>
+            <% img_url = item.image.attached? ? url_for(item.image) : (item.try(:image_url) || "") %>
+            <div class="slot js-item-slot" 
+                 data-id="<%= item.id %>"
+                 data-title="<%= item.title %>" 
+                 data-desc="<%= item.description %>" 
+                 data-img="<%= img_url %>">
+              
+              <% if img_url.present? %>
+                <%= image_tag(img_url, class: "slot-img") %>
+              <% end %>
+              
+              <div class="slot-name"><%= item.title %></div>
+            </div>
+          <% end %>
+          
+          <% (30 - items.count).times do %>
+            <div class="slot" style="cursor: default;"></div>
+          <% end %>
+        <% else %>
+          <div class="empty-inv">Инвентарь пуст. Артефакты не найдены.</div>
+        <% end %>
       </div>
-    <% end %>
-  <% else %>
-    <p style="color: #888; text-align: center; margin-top: 50px;">В этой вселенной термины лора пока не описаны.</p>
-  <% end %>
+    </div>
+  </div>
 </div>
+
+<div class="inventory-right" id="inventory-right">
+  <div class="item-details" id="item-details">
+    
+    <button class="close-panel-btn" onclick="closePanel()">×</button>
+    
+    <div id="view-mode">
+      <div class="detail-img-box"><div id="detail-img" class="detail-img"></div></div>
+      <h2 class="detail-title">
+        <span id="detail-title">Название</span>
+        <% if is_admin %><button class="btn-edit-inline" onclick="toggleEditMode()">✏️ Ред.</button><% end %>
+      </h2>
+      <div id="detail-desc" class="detail-desc">Описание...</div>
+    </div>
+
+    <% if is_admin %>
+      <div id="edit-mode" style="display: none;">
+        <label style="color:#94a3b8; font-size: 12px; font-weight: bold;">Название</label>
+        <input type="text" id="edit-item-title" class="form-control">
+        
+        <label style="color:#94a3b8; font-size: 12px; font-weight: bold;">Загрузить картинку (Файл)</label>
+        <input type="file" id="edit-item-image" class="form-control" accept="image/*">
+        
+        <label style="color:#94a3b8; font-size: 12px; font-weight: bold;">Описание</label>
+        <textarea id="edit-item-desc" class="form-control" style="height: 150px;"></textarea>
+        
+        <div style="display:flex; gap:10px; justify-content: flex-end; margin-top: 15px;">
+          <button class="btn-cancel" onclick="toggleEditMode()">Отмена</button>
+          <button class="btn-save" onclick="saveGlossaryItem()">Сохранить</button>
+        </div>
+      </div>
+
+      <button id="btn-delete-item" class="btn-danger" style="display:none;" onclick="deleteGlossaryItem()">🗑 Удалить из Архива</button>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  let selectedItemId = null;
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  document.addEventListener("turbo:load", function() {
+    const slots = document.querySelectorAll('.js-item-slot');
+    const rightPanel = document.getElementById('inventory-right');
+    const mainContainer = document.getElementById('inventory-main');
+    const btnDelete = document.getElementById('btn-delete-item');
+
+    slots.forEach(slot => {
+      slot.addEventListener('click', function() {
+        slots.forEach(s => s.classList.remove('active'));
+        this.classList.add('active');
+
+        rightPanel.classList.add('show');
+        
+        if (window.innerWidth > 768) {
+          mainContainer.style.marginRight = '420px';
+        }
+
+        selectedItemId = this.getAttribute('data-id');
+        const title = this.getAttribute('data-title');
+        const desc = this.getAttribute('data-desc');
+        const img = this.getAttribute('data-img');
+
+        document.getElementById('detail-title').textContent = title || "Неизвестный артефакт";
+        document.getElementById('detail-desc').textContent = desc || "Описание отсутствует.";
+        const dImg = document.getElementById('detail-img');
+        if (img) dImg.style.backgroundImage = `url('${img}')`;
+        else dImg.style.backgroundImage = 'none';
+
+        const editTitle = document.getElementById('edit-item-title');
+        const editDesc = document.getElementById('edit-item-desc');
+        if(editTitle) editTitle.value = title;
+        if(editDesc) editDesc.value = desc;
+
+        const viewMode = document.getElementById('view-mode');
+        const editMode = document.getElementById('edit-mode');
+        if(viewMode && editMode) {
+          viewMode.style.display = 'block';
+          editMode.style.display = 'none';
+        }
+
+        if (btnDelete) btnDelete.style.display = 'block';
+      });
+    });
+  });
+
+  window.closePanel = function() {
+    const rightPanel = document.getElementById('inventory-right');
+    const mainContainer = document.getElementById('inventory-main');
+    const slots = document.querySelectorAll('.js-item-slot');
+    
+    rightPanel.classList.remove('show');
+    mainContainer.style.marginRight = '0';
+    slots.forEach(s => s.classList.remove('active'));
+  }
+
+  window.toggleEditMode = function() {
+    const view = document.getElementById('view-mode');
+    const edit = document.getElementById('edit-mode');
+    if (edit.style.display === 'none') { view.style.display = 'none'; edit.style.display = 'block'; } 
+    else { view.style.display = 'block'; edit.style.display = 'none'; }
+  }
+
+  window.createGlossaryItem = function(franchiseId) {
+    const title = document.getElementById('new-item-title').value;
+    fetch(`/franchise/${franchiseId}/glossary`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken }, body: JSON.stringify({ title: title })
+    }).then(async r => { if(r.ok) window.location.reload(); else { const data = await r.json(); alert("Ошибка: " + data.error); }});
+  }
+
+  window.saveGlossaryItem = function() {
+    if (!selectedItemId) return;
+    const newTitle = document.getElementById('edit-item-title').value;
+    const newDesc = document.getElementById('edit-item-desc').value;
+    const fileInput = document.getElementById('edit-item-image');
+
+    const formData = new FormData();
+    formData.append('glossary[title]', newTitle);
+    formData.append('glossary[description]', newDesc);
+    if (fileInput.files.length > 0) formData.append('glossary[image]', fileInput.files[0]);
+
+    fetch(`/glossary/${selectedItemId}`, {
+      method: 'PATCH', headers: { 'X-CSRF-Token': csrfToken }, body: formData
+    }).then(async r => { if(r.ok) window.location.reload(); else { const data = await r.json(); alert("Ошибка: " + data.error); }});
+  }
+
+  window.deleteGlossaryItem = function() {
+    if (!selectedItemId) return;
+    if (!confirm("Вы уверены?")) return;
+    fetch(`/glossary/${selectedItemId}`, { method: 'DELETE', headers: { 'X-CSRF-Token': csrfToken } }).then(r => { if(r.ok) window.location.reload(); });
+  }
+</script>
