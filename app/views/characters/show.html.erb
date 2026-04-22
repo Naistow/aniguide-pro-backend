@@ -1,5 +1,5 @@
 <% is_admin = defined?(logged_in?) && logged_in? && current_user.try(:admin?) %>
-<% portrait_url = @character.portrait.attached? ? url_for(@character.portrait) : "" %>
+<% portrait_url = @character.portrait.attached? ? url_for(@character.portrait.variant(resize_to_limit: [600, 800])) : "" %>
 
 <style>
   /* Убрали жесткий фон, чтобы работали темы франшиз! */
