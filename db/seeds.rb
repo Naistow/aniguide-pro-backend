@@ -2,9 +2,9 @@ puts "--- ГЛОБАЛЬНОЕ ЗАПОЛНЕНИЕ БАЗЫ: EVA & FATE ---"
 
 puts "Очистка таблиц..."
 [
-  'Favorite', 'EpisodeAppearance', 'Episode', 'Appearance', 'GuideStep', 'WatchGuide', 'LoreGlossary', 
-  'Character', 'Work', 'User', 'Franchise', 'MediaType', 
-  'UserRole', 'CharacterRole'
+  'Favorite', 'Glossary', 'LoreGlossary', 'EpisodeAppearance', 'Episode', 
+  'Appearance', 'GuideStep', 'WatchGuide', 'Character', 'Work', 'User', 
+  'Franchise', 'MediaType', 'UserRole', 'CharacterRole'
 ].each { |m| m.constantize.delete_all if Object.const_defined?(m) }
 
 admin_role = UserRole.create!(role_name: 'Admin')
