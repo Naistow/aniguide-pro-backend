@@ -2,7 +2,7 @@ puts "--- ГЛОБАЛЬНОЕ ЗАПОЛНЕНИЕ БАЗЫ: EVA & FATE ---"
 
 puts "Очистка таблиц..."
 [
-  'EpisodeAppearance', 'Episode', 'Appearance', 'GuideStep', 'WatchGuide', 'LoreGlossary', 
+  'Favorite', 'EpisodeAppearance', 'Episode', 'Appearance', 'GuideStep', 'WatchGuide', 'LoreGlossary', 
   'Character', 'Work', 'User', 'Franchise', 'MediaType', 
   'UserRole', 'CharacterRole'
 ].each { |m| m.constantize.delete_all if Object.const_defined?(m) }
