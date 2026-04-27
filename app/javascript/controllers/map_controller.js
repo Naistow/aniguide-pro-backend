@@ -16,9 +16,10 @@ export default class extends Controller {
     this.drawLines()
 
     this.element.addEventListener('wheel', this.zoom.bind(this), { passive: false })
-    this.element.addEventListener('mousedown', this.startDrag.bind(this))
-    window.addEventListener('mousemove', this.drag.bind(this))
-    window.addEventListener('mouseup', this.endDrag.bind(this))
+    this.element.addEventListener('pointerdown', this.startDrag.bind(this))
+    window.addEventListener('pointermove', this.drag.bind(this))
+    window.addEventListener('pointerup', this.endDrag.bind(this))
+    window.addEventListener('pointercancel', this.endDrag.bind(this)) // На случай, если палец соскользнет за экран
   }
 
   zoom(e) {
