@@ -3,36 +3,46 @@
 <% franchise_characters = defined?(Character) ? Character.where(franchise_id: @work.franchise_id).order(:name) : [] %>
 
 <style>
+  /* 1. Глобальный сброс, чтобы отступы не увеличивали ширину элементов */
+  * { box-sizing: border-box; }
+
   body { margin: 0; background-color: #020617; color: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; }
-  .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 60vh; background-image: url('<%= @work.image_url.present? ? @work.image_url : "" %>'); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); z-index: -1; }
-  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
   
+  .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 60vh; background-image: url('<%= @work.image_url.present? ? @work.image_url : "" %>'); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); z-index: -1; }
+  
+  .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 20px; }
+
   .back-link { display: inline-flex; align-items: center; gap: 10px; color: #94a3b8; text-decoration: none; font-weight: 500; margin-bottom: 30px; transition: all 0.3s ease; padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
 
-  /* Адаптивный заголовок */
-  .work-header { display: flex; gap: 30px; align-items: flex-end; margin-bottom: 40px; }
+  /* --- ШАПКА ТАЙТЛА --- */
+  .work-header { display: flex; gap: 30px; align-items: flex-end; margin-bottom: 40px; flex-wrap: wrap; }
   .work-poster { width: 240px; height: 340px; background-color: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); background-size: cover; background-position: center; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1); }
-  .work-info h1 { font-size: 32px; margin: 0 0 15px 0; line-height: 1.1; font-weight: 800; }
+  .work-info { flex: 1; min-width: 300px; }
+  .work-info h1 { font-size: clamp(28px, 5vw, 48px); margin: 0 0 15px 0; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
+  .work-info .meta { color: #3b82f6; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px; }
 
-  /* Адаптивная сетка: на мобилках 1 колонка, на ПК - 2 */
-  .content-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
-  @media (min-width: 769px) {
-    .content-grid { grid-template-columns: 2fr 1fr; }
-    .work-info h1 { font-size: 48px; }
+  /* --- СЕТКА КОНТЕНТА (Главное исправление) --- */
+  .content-grid { display: flex; flex-direction: column; gap: 25px; }
+  
+  /* На больших экранах возвращаем 2 колонки */
+  @media (min-width: 900px) {
+    .content-grid { display: grid; grid-template-columns: 2fr 1fr; }
   }
 
-  .content-section { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-  .content-section h2 { margin-top: 0; font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .content-section { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: clamp(15px, 4vw, 35px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; }
+  .content-section h2 { margin-top: 0; font-size: 22px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+  .content-section p { color: #94a3b8; line-height: 1.8; font-size: 16px; }
 
-  /* Сетки персонажей и серий */
-  .character-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; }
-  .episodes-scroll-area { max-height: 400px; overflow-y: auto; }
+  /* --- ПЕРСОНАЖИ --- */
+  .character-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 12px; }
+  .character-avatar { width: 55px; height: 55px; border-radius: 50%; background-color: #1e293b; background-size: cover; background-position: center top; margin-bottom: 8px; border: 2px solid transparent; }
 
-  /* МОБИЛЬНЫЕ ПРАВКИ */
-  @media (max-width: 768px) {
-    .work-header { flex-direction: column; align-items: center; text-align: center; }
-    .work-poster { width: 200px; height: 280px; }
-    .content-section { padding: 20px; }
+  /* --- МОБИЛЬНЫЕ ПРАВКИ (Для самых маленьких) --- */
+  @media (max-width: 600px) {
+    .work-header { justify-content: center; text-align: center; }
+    .work-poster { width: 180px; height: 260px; }
+    .work-info { min-width: 100%; }
+    .container { padding: 15px; }
   }
 </style>
 
