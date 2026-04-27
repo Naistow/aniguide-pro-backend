@@ -1,9 +1,13 @@
 <style>
+<style>
+  /* --- СБРОС И БАЗА --- */
+  * { box-sizing: border-box; } /* Критично важно, чтобы элементы не вылезали за края экрана */
+
   /* --- СЛАЙДЕР И НАВИГАЦИЯ --- */
   .hero-slider-section { position: relative; width: 100%; height: 70vh; overflow: hidden; background: #000; }
 
   .slider-overlay-nav {
-    position: absolute; top: 0; left: 0; width: 100%; padding: 20px; box-sizing: border-box;
+    position: absolute; top: 0; left: 0; width: 100%; padding: 20px;
     display: flex; justify-content: space-between; align-items: center; z-index: 100;
     background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
   }
@@ -27,7 +31,8 @@
   /* --- ФУТУРИСТИЧНЫЕ КАРТОЧКИ --- */
   .cards-container { display: flex; justify-content: center; gap: 40px; padding: 60px 40px; flex-wrap: wrap; background: #0b0c10; }
   
-  .index-card { background: #1a1a24; border-radius: 0; width: 320px; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
+  /* Вместо жестких 320px делаем гибкую ширину */
+  .index-card { background: #1a1a24; border-radius: 0; width: 100%; max-width: 320px; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
   .index-card-content { padding: 30px; flex-grow: 1; text-align: center; position: relative; z-index: 2; }
 
   /* Evangelion (Зелено-фиолетовый) */
@@ -44,15 +49,32 @@
 
   .btn-index { display: block; padding: 12px; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; cursor: pointer; }
 
-  /* --- АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ --- */
+  /* --- АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ (Магия здесь) --- */
   @media (max-width: 768px) {
-    .slider-overlay-nav { padding: 15px; }
-    .nav-brand { font-size: 20px; }
-    .btn-nav { padding: 8px 10px; font-size: 13px; }
-    .eva-side { font-size: 12vw; top: 15%; left: 5%; transform: rotate(-10deg); }
-    .fate-side { font-size: 12vw; bottom: 15%; right: 5%; }
-    .cards-container { padding: 30px 15px; }
-    .index-card { width: 100%; }
+    .slider-overlay-nav { 
+      flex-direction: column; /* Шапка теперь в столбик, чтобы не распирать экран */
+      gap: 15px;
+      padding: 15px; 
+    }
+    .nav-actions {
+      flex-wrap: wrap; /* Кнопки тоже перенесутся, если места мало */
+      justify-content: center;
+    }
+    .nav-brand { font-size: 24px; }
+    
+    .eva-side { font-size: 14vw; top: 20%; left: 5%; transform: rotate(-10deg); }
+    .fate-side { font-size: 14vw; bottom: 15%; right: 5%; }
+    
+    .cards-container { 
+      flex-direction: column; /* Жестко выстраиваем карточки в колонку */
+      align-items: center;    /* Центрируем их */
+      padding: 30px 15px;
+      gap: 25px;
+    }
+    .index-card { 
+      width: 100%; 
+      max-width: 100%; /* Карточка займет всю ширину телефона */
+    }
   }
 </style>
 
