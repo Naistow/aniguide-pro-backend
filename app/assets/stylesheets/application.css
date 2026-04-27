@@ -12,7 +12,7 @@ body {
   color: #e0e0e0;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.6;
-  overflow-x: hidden; /* Запрещаем горизонтальный скролл */
+  overflow-x: hidden; /* Запрещаем горизонтальный скролыл */
 }
 
 /* =========================================
