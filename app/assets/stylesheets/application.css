@@ -1,4 +1,170 @@
-.map-container { /* или другой класс твоей карты */
-  /* тут твои старые стили ширины, высоты и т.д. */
-  touch-action: none; /* Запрещает браузеру скроллить страницу поверх карты */
+/* =========================================
+   БАЗОВЫЕ НАСТРОЙКИ (Сброс стилей)
+   ========================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0d0d12; /* Глубокий темный фон */
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden; /* Запрещаем горизонтальный скролл */
+}
+
+/* =========================================
+   СЕТКА И КОНТЕЙНЕРЫ (Адаптив)
+   ========================================= */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Главный контейнер для карточек франшиз */
+.franchise-list {
+  display: flex;
+  flex-wrap: wrap; /* Разрешаем перенос на новые строки */
+  gap: 30px;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+/* =========================================
+   КАРТОЧКИ (Тайтлы, Франшизы)
+   ========================================= */
+.card {
+  background-color: #1a1a24;
+  border-radius: 12px;
+  padding: 25px;
+  width: calc(33.333% - 20px); /* 3 карточки в ряд на ПК */
+  min-width: 300px; /* Карточка не сожмется меньше этого размера */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Специфичные стили для атмосферы */
+.card.eva-style {
+  border: 2px solid #39ff14; /* Неоновый зеленый */
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.1);
+}
+
+.card.eva-style h2 {
+  color: #39ff14;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.card.fate-style {
+  border: 2px solid #8b0000; /* Темно-красный */
+  box-shadow: 0 0 15px rgba(139, 0, 0, 0.2);
+}
+
+.card.fate-style h2 {
+  color: #ffd700; /* Золотой */
+  text-align: center;
+}
+
+/* =========================================
+   ИНТЕРАКТИВНАЯ КАРТА
+   ========================================= */
+.map-container {
+  width: 100%;
+  height: 70vh; /* Занимает 70% высоты экрана */
+  min-height: 500px;
+  background-color: #050508;
+  border: 1px solid #333;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  touch-action: none; /* ❗ КРИТИЧНО ДЛЯ ТЕЛЕФОНОВ: отключает скролл страницы по карте */
+  margin-top: 20px;
+}
+
+.map-node {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background-color: #2a2a35;
+  border-radius: 50%;
+  border: 2px solid #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+  background-size: cover;
+  background-position: center;
+  user-select: none;
+  transition: border-color 0.2s ease;
+  z-index: 10;
+}
+
+.connection {
+  stroke: #555;
+  stroke-width: 3;
+  z-index: 1;
+}
+
+/* =========================================
+   КНОПКИ
+   ========================================= */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 10px 5px 0 0;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid #555;
+  border-radius: 6px;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.card.eva-style .btn {
+  border-color: #1b7a0b;
+  color: #39ff14;
+}
+
+.card.eva-style .btn:hover {
+  background-color: rgba(57, 255, 20, 0.1);
+}
+
+.card.fate-style .btn {
+  border-color: #8b0000;
+  color: #ffd700;
+}
+
+.card.fate-style .btn:hover {
+  background-color: rgba(139, 0, 0, 0.2);
+}
+
+/* =========================================
+   📱 МОБИЛЬНАЯ АДАПТАЦИЯ (МАГИЯ ДЛЯ ТЕЛЕФОНА)
+   ========================================= */
+@media (max-width: 768px) {
+  .franchise-list {
+    flex-direction: column; /* Выстраиваем карточки в вертикальную колонку */
+    align-items: center;    /* Центрируем их */
+  }
+
+  .card {
+    width: 100%; /* На телефоне карточка занимает всю ширину */
+    max-width: 400px;
+  }
+
+  .map-container {
+    height: 60vh; /* Чуть уменьшаем карту на телефоне */
+  }
 }
