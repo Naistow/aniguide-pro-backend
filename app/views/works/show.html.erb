@@ -3,46 +3,75 @@
 <% franchise_characters = defined?(Character) ? Character.where(franchise_id: @work.franchise_id).order(:name) : [] %>
 
 <style>
-  /* 1. Глобальный сброс, чтобы отступы не увеличивали ширину элементов */
+  /* Сброс */
   * { box-sizing: border-box; }
-
   body { margin: 0; background-color: #020617; color: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; }
   
   .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 60vh; background-image: url('<%= @work.image_url.present? ? @work.image_url : "" %>'); background-size: cover; background-position: center; filter: blur(25px) brightness(0.2); z-index: -1; }
   
   .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 20px; }
-
   .back-link { display: inline-flex; align-items: center; gap: 10px; color: #94a3b8; text-decoration: none; font-weight: 500; margin-bottom: 30px; transition: all 0.3s ease; padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
 
-  /* --- ШАПКА ТАЙТЛА --- */
+  /* Шапка */
   .work-header { display: flex; gap: 30px; align-items: flex-end; margin-bottom: 40px; flex-wrap: wrap; }
   .work-poster { width: 240px; height: 340px; background-color: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); background-size: cover; background-position: center; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1); }
   .work-info { flex: 1; min-width: 300px; }
   .work-info h1 { font-size: clamp(28px, 5vw, 48px); margin: 0 0 15px 0; line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
   .work-info .meta { color: #3b82f6; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 10px; }
 
-  /* --- СЕТКА КОНТЕНТА (Главное исправление) --- */
+  /* Сетка (На мобилках - колонка, на ПК - две) */
   .content-grid { display: flex; flex-direction: column; gap: 25px; }
-  
-  /* На больших экранах возвращаем 2 колонки */
-  @media (min-width: 900px) {
-    .content-grid { display: grid; grid-template-columns: 2fr 1fr; }
-  }
+  @media (min-width: 900px) { .content-grid { display: grid; grid-template-columns: 2fr 1fr; } }
 
   .content-section { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: clamp(15px, 4vw, 35px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; }
   .content-section h2 { margin-top: 0; font-size: 22px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
   .content-section p { color: #94a3b8; line-height: 1.8; font-size: 16px; }
 
-  /* --- ПЕРСОНАЖИ --- */
-  .character-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 12px; }
-  .character-avatar { width: 55px; height: 55px; border-radius: 50%; background-color: #1e293b; background-size: cover; background-position: center top; margin-bottom: 8px; border: 2px solid transparent; }
+  /* === СПИСОК СЕРИЙ === */
+  .episodes-scroll-area { max-height: 450px; overflow-y: auto; padding-right: 10px; margin-bottom: 15px; }
+  .episodes-scroll-area::-webkit-scrollbar { width: 6px; }
+  .episodes-scroll-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+  .episodes-scroll-area::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
 
-  /* --- МОБИЛЬНЫЕ ПРАВКИ (Для самых маленьких) --- */
+  .episode-item { padding: 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; cursor: pointer; user-select: none; }
+  .episode-item:hover { background: rgba(255, 255, 255, 0.08); }
+  .episode-item.active { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
+  .episode-item.active .episode-name { color: #3b82f6; }
+  .episode-name { font-weight: 600; color: #f1f5f9; transition: color 0.2s; pointer-events: none;}
+  .episode-meta { color: #64748b; font-size: 13px; pointer-events: none;}
+
+  /* ❗❗❗ ИСПРАВЛЕНИЕ: Прячем неактивные серии ❗❗❗ */
+  .plot-content { display: none; animation: fadeIn 0.3s ease; }
+  .plot-content.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* === ПЕРСОНАЖИ И КНОПКИ === */
+  .characters-title { font-size: 16px; margin-top: 30px; margin-bottom: 15px; color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+  .character-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; }
+  .character-card { position: relative; display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #f8fafc; transition: transform 0.2s; }
+  .character-avatar { width: 60px; height: 60px; border-radius: 50%; background-color: #1e293b; background-size: cover; background-position: center top; margin-bottom: 8px; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .character-name { font-size: 11px; font-weight: 600; text-align: center; line-height: 1.2; }
+  .char-remove-btn { position: absolute; top: -5px; right: 5px; width: 22px; height: 22px; background: #ef4444; color: white; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+
+  /* Формы и модалки */
+  .btn-edit-inline { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid #3b82f6; border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; margin-left: auto; }
+  .btn-add-full { width: 100%; background: transparent; border: 2px dashed rgba(255,255,255,0.2); color: #94a3b8; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+  .form-control { width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 15px; }
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; z-index: 10001; }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal-box { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 30px; width: 400px; max-width: 90vw; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-save { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+  .btn-cancel { background: transparent; color: #94a3b8; border: 1px solid #475569; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+
+  /* === МОБИЛЬНЫЕ ПРАВКИ === */
   @media (max-width: 600px) {
     .work-header { justify-content: center; text-align: center; }
     .work-poster { width: 180px; height: 260px; }
     .work-info { min-width: 100%; }
     .container { padding: 15px; }
+    /* На телефоне название серии и время будут друг под другом, чтобы не ломать рамку */
+    .episode-item { flex-direction: column; align-items: flex-start; gap: 5px; }
   }
 </style>
 
