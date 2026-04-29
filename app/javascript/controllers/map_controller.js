@@ -1,13 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  // Добавили isAdmin (считывает статус из data-map-is-admin-value)
   static values = { isAdmin: Boolean }
   static targets = [ "canvas", "svg", "node", "adminMenu", "modal", "editTitle", "editParent", "editImage", "deleteModal", "createRootModal", "newRootTitle", "newRootImage" ]
 
   connect() {
     this.isDraggingMap = false; this.draggingNode = null;
-    this.startX = 0; this.startY = 0; this.translateX = 0; this.translateY = 0;
+    this.translateX = 0; this.translateY = 0;
+    this.prevTranslateX = 0; this.prevTranslateY = 0;
     this.scale = 1; 
     this.clickThreshold = 5; this.mouseStartX = 0; this.mouseStartY = 0;
     this.selectedNodeId = null; 
@@ -17,9 +17,9 @@ export default class extends Controller {
 
     this.element.addEventListener('wheel', this.zoom.bind(this), { passive: false })
     this.element.addEventListener('pointerdown', this.startDrag.bind(this))
-    window.addEventListener('pointermove', this.drag.bind(this))
-    window.addEventListener('pointerup', this.endDrag.bind(this))
-    window.addEventListener('pointercancel', this.endDrag.bind(this)) // На случай, если палец соскользнет за экран
+    window.addEventListener('pointermove', this.drag.bind(this))
+    window.addEventListener('pointerup', this.endDrag.bind(this))
+    window.addEventListener('pointercancel', this.endDrag.bind(this))
   }
 
   zoom(e) {
@@ -41,9 +41,7 @@ export default class extends Controller {
   }
 
   showContextMenu(e) {
-    // ВАЖНО: Если это не админ, меню не появится
     if (!this.isAdminValue) return;
-
     const node = e.target.closest('.map-node')
     if (node) {
       e.preventDefault()
@@ -57,10 +55,9 @@ export default class extends Controller {
   }
 
   hideContextMenu() { 
-    if (this.hasAdminMenuTarget) {
-      this.adminMenuTarget.classList.remove('active') 
-    }
+    if (this.hasAdminMenuTarget) this.adminMenuTarget.classList.remove('active') 
   }
+  
   stopPropagation(e) { e.stopPropagation() }
 
   openCreateRootModal(e) {
@@ -173,40 +170,48 @@ export default class extends Controller {
   }
 
   startDrag(e) {
-    if (e.button === 2 || e.target.closest('.fab')) return; 
-    const node = e.target.closest('.map-node')
-    this.mouseStartX = e.clientX; this.mouseStartY = e.clientY
+    if (e.button === 2 || e.target.closest('.fab')) return;
+    const node = e.target.closest('.map-node');
+    this.mouseStartX = e.clientX;
+    this.mouseStartY = e.clientY;
 
-    if (node) { 
-      // ВАЖНО: Регистрируем клик по кружку (чтобы перейти на его страницу), 
-      // НО если юзер не админ — не разрешаем ему перемещать кружок!
-      this.draggingNode = node; 
-      if (this.isAdminValue) {
-        this.draggingNode.style.zIndex = 1000 
-      }
-    } else { 
-      // Двигать карту могут все
-      this.isDraggingMap = true; 
-      this.startX = e.clientX - this.translateX; 
-      this.startY = e.clientY - this.translateY 
+    if (node) {
+      this.draggingNode = node;
+    } else {
+      this.isDraggingMap = true;
+      this.prevTranslateX = this.translateX; 
+      this.prevTranslateY = this.translateY;
     }
   }
 
   drag(e) {
     if (this.draggingNode) {
-      // ВАЖНО: Если юзер не админ — блокируем логику перетаскивания кружка
       if (!this.isAdminValue) return;
-
-      e.preventDefault()
-      const rect = this.canvasTarget.getBoundingClientRect()
-      const x = (e.clientX - rect.left) / this.scale 
-      const y = (e.clientY - rect.top) / this.scale
-      this.draggingNode.style.left = `${x}px`; this.draggingNode.style.top = `${y}px`
-      this.drawLines()
+      e.preventDefault();
+      const rect = this.canvasTarget.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / this.scale;
+      const y = (e.clientY - rect.top) / this.scale;
+      this.draggingNode.style.left = `${x}px`;
+      this.draggingNode.style.top = `${y}px`;
+      
+      if (!this.drawFrame) {
+        this.drawFrame = requestAnimationFrame(() => {
+          this.drawLines();
+          this.drawFrame = null;
+        });
+      }
     } else if (this.isDraggingMap) {
-      e.preventDefault()
-      this.translateX = e.clientX - this.startX; this.translateY = e.clientY - this.startY
-      this.updateTransform()
+      e.preventDefault();
+      
+      // Увеличили множитель до 1.8! Теперь карта будет очень отзывчивой
+      const sensitivity = 1.8; 
+      const dx = (e.clientX - this.mouseStartX) * sensitivity;
+      const dy = (e.clientY - this.mouseStartY) * sensitivity;
+
+      this.translateX = this.prevTranslateX + dx;
+      this.translateY = this.prevTranslateY + dy;
+      
+      this.updateTransform();
     }
   }
 
@@ -216,18 +221,12 @@ export default class extends Controller {
     const isClick = deltaX < this.clickThreshold && deltaY < this.clickThreshold
 
     if (this.draggingNode) {
-      if (this.isAdminValue) {
-        this.draggingNode.style.zIndex = ''
-      }
+      if (this.isAdminValue) this.draggingNode.style.zIndex = ''
       
       if (isClick) { 
-        // Если это был просто клик, совершаем переход (Доступно всем!)
         this.triggerTransition(this.draggingNode.dataset.id) 
-      } else { 
-        // Если это было перетаскивание, сохраняем координаты (Доступно только админу!)
-        if (this.isAdminValue) {
-          this.saveCoordinates(this.draggingNode) 
-        }
+      } else if (this.isAdminValue) {
+        this.saveCoordinates(this.draggingNode) 
       }
     }
     this.isDraggingMap = false; this.draggingNode = null

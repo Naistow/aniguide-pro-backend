@@ -2,8 +2,8 @@
 <% portrait_url = @character.portrait.attached? ? url_for(@character.portrait.variant(resize_to_limit: [600, 800])) : "" %>
 
 <style>
-  /* Убрали жесткий фон, чтобы работали темы франшиз! */
-  body { margin: 0; color: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; }
 
   .btn-like { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: all 0.2s; margin-top: 15px; width: 100%; font-size: 15px; }
   .btn-like:hover { background: rgba(255,255,255,0.2); }
@@ -11,25 +11,34 @@
   .btn-like.active:hover { background: rgba(239, 68, 68, 0.3); }
   
   .hero-background { position: absolute; top: 0; left: 0; width: 100%; height: 50vh; background-image: url('<%= portrait_url %>'); background-size: cover; background-position: center 20%; filter: blur(30px) brightness(0.3); z-index: -1; }
-  .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 10; }
+  
+  .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 20px; position: relative; z-index: 10; }
   
   .back-btn { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: bold; margin-bottom: 30px; transition: color 0.2s; cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
   .back-btn:hover { color: #ffffff; }
 
-  .char-layout { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: start; }
+  /* ❗ Главное исправление: Сетка теперь адаптивная ❗ */
+  .char-layout { display: flex; flex-direction: column; gap: 30px; }
+  @media (min-width: 800px) {
+    .char-layout { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: start; }
+  }
 
-  .char-sidebar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+  /* На телефоне ограничиваем ширину аватарки, чтобы она не была гигантской */
+  .char-sidebar { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 100%; max-width: 350px; margin: 0 auto; }
+  
   .char-portrait { width: 100%; aspect-ratio: 3/4; background-color: rgba(255,255,255,0.05); border-radius: 12px; background-size: cover; background-position: center top; margin-bottom: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
   .char-name-jp { color: rgba(255,255,255,0.5); font-size: 14px; letter-spacing: 2px; margin-bottom: 5px; }
-  .char-name { font-size: 32px; margin: 0 0 15px 0; font-weight: 800; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  .char-name { font-size: clamp(24px, 5vw, 32px); margin: 0 0 15px 0; font-weight: 800; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
-  .char-content { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-height: 400px; }
+  .char-content { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: clamp(15px, 4vw, 35px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-height: 400px; width: 100%; }
+  
   .section-title { margin-top: 0; font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-  .char-desc { color: rgba(255,255,255,0.9); line-height: 1.8; font-size: 16px; white-space: pre-wrap; }
+  .char-desc { color: rgba(255,255,255,0.9); line-height: 1.8; font-size: 16px; white-space: pre-wrap; word-wrap: break-word; }
 
   .work-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 10px; color: #f8fafc; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s; margin-right: 10px; margin-bottom: 10px; backdrop-filter: blur(5px); }
   .work-badge:hover { background: rgba(255,255,255,0.2); color: white; transform: translateY(-2px); border-color: white; }
 
+  /* Формы и кнопки для редактирования */
   .btn-edit-inline { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-weight: bold; backdrop-filter: blur(5px); }
   .btn-edit-inline:hover { background: white; color: black; }
   .form-control { width: 100%; box-sizing: border-box; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 15px; font-family: inherit; font-size: 14px; outline: none; }
